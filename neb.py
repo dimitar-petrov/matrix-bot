@@ -14,11 +14,6 @@ import os
 
 log = logging.getLogger(name=__name__)
 
-# TODO:
-# - Add utility plugins in neb package to do things like "invite x to room y"?
-# - Add other plugins as tests of plugin architecture (e.g. anagrams, dictionary lookup, etc)
-
-
 def generate_config(url, username, password, admin, config_loc):
     config = MatrixConfig(
             hs_url=url,
