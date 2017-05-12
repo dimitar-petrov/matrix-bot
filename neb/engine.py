@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 from matrix_client.api import MatrixRequestError
 from neb import NebError
 from neb.plugins import CommandNotFoundError
@@ -101,7 +103,8 @@ class Engine(object):
                     try:
                         responses = plugin.run(
                             event,
-                            unicode(" ".join(body.split()[1:]).encode("utf8"))
+                            #unicode(" ".join(body.split()[1:]).encode("utf8"))
+                            " ".join(body.split()[1:])
                         )
                     except CommandNotFoundError as e:
                         self.matrix.send_message(

@@ -11,6 +11,7 @@ from plugins.jira import JiraPlugin
 from plugins.url import UrlPlugin
 from plugins.time_utils import TimePlugin
 from plugins.github import GithubPlugin
+from plugins.google import GooglePlugin
 from plugins.prometheus import PrometheusPlugin
 
 import logging
@@ -82,6 +83,7 @@ def main(config):
         TimePlugin,
         Base64Plugin,
         GuessNumberPlugin,
+        GooglePlugin,
         #JiraPlugin,
         #UrlPlugin,
         #GithubPlugin,
