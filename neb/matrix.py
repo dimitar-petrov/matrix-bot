@@ -41,7 +41,7 @@ class MatrixConfig(object):
             hs_url = hs_url[:-22]
             log.info("Detected legacy URL, using '%s' instead. Consider changing this in your configuration." % hs_url)
 
-        if not j[MatrixConfig.TOK]:
+        if not MatrixConfig.TOK in j:
             token = None
         else:
             token = j[MatrixConfig.TOK]

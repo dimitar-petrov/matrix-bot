@@ -2,6 +2,7 @@
 import argparse
 
 from matrix_client.api import MatrixHttpApi
+from matrix_client.errors import MatrixRequestError
 from neb.engine import Engine
 from neb.matrix import MatrixConfig
 from plugins.b64 import Base64Plugin
@@ -69,7 +70,12 @@ def main(config):
     # setup api/endpoint
     if not config.token:
         matrix = MatrixHttpApi(config.base_url)
-        res = matrix.login(login_type="m.login.password", user="neb", password="G@h0km<0n@")
+        login = config.user_id[1:].split(":")[0]
+        try:
+            res = matrix.login(login_type="m.login.password", user=login, password=config.password)
+        except MatrixRequestError as err:
+            log.error("Login error: %r" % err)
+            exit()
         log.debug("Login result: %r" % res)
         config.token = res["access_token"]
         config.save()
