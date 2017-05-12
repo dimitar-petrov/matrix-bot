@@ -7,15 +7,18 @@ class MatrixConfig(object):
     URL = "url"
     USR = "user"
     TOK = "token"
+    PWD = "password"
     ADM = "admins"
     CIS = "case_insensitive"
 
-    def __init__(self, hs_url, user_id, access_token, admins, case_insensitive):
+    def __init__(self, hs_url, user_id, password, admins, case_insensitive, conf_location, access_token=None):
         self.user_id = user_id
-        self.token = access_token
+        self.password = password
         self.base_url = hs_url
         self.admins = admins
+        self.token = access_token
         self.case_insensitive = case_insensitive
+        self.conf_location = conf_location
 
     @classmethod
     def to_file(cls, config, f):
@@ -23,6 +26,7 @@ class MatrixConfig(object):
             MatrixConfig.URL: config.base_url,
             MatrixConfig.TOK: config.token,
             MatrixConfig.USR: config.user_id,
+            MatrixConfig.PWD: config.password,
             MatrixConfig.ADM: config.admins,
             MatrixConfig.CIS: config.case_insensitive
         }, indent=4))
@@ -37,10 +41,28 @@ class MatrixConfig(object):
             hs_url = hs_url[:-22]
             log.info("Detected legacy URL, using '%s' instead. Consider changing this in your configuration." % hs_url)
 
+        if not j[MatrixConfig.TOK]:
+            token = None
+        else:
+            token = j[MatrixConfig.TOK]
+
         return MatrixConfig(
             hs_url=hs_url,
             user_id=j[MatrixConfig.USR],
-            access_token=j[MatrixConfig.TOK],
+            access_token=token,
+            password=j[MatrixConfig.PWD],
             admins=j[MatrixConfig.ADM],
-            case_insensitive=j[MatrixConfig.CIS] if MatrixConfig.CIS in j else False
+            case_insensitive=j[MatrixConfig.CIS] if MatrixConfig.CIS in j else False,
+            conf_location=f.name
         )
+
+    def save(self):
+        with open(self.conf_location, 'w') as f:
+            f.write(json.dumps({
+                MatrixConfig.URL: self.base_url,
+                MatrixConfig.TOK: self.token,
+                MatrixConfig.USR: self.user_id,
+                MatrixConfig.PWD: self.password,
+                MatrixConfig.ADM: self.admins,
+                MatrixConfig.CIS: self.case_insensitive
+            }, indent=4))

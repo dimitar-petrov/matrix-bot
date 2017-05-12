@@ -24,20 +24,19 @@ log = logging.getLogger(name=__name__)
 # - Add other plugins as tests of plugin architecture (e.g. anagrams, dictionary lookup, etc)
 
 
-def generate_config(url, username, token, config_loc):
+def generate_config(url, username, password, admin, config_loc):
     config = MatrixConfig(
             hs_url=url,
             user_id=username,
-            access_token=token,
-            admins=[]
+            password=password,
+            admins=[admin],
+            case_insensitive=False,
+            conf_location=config_loc
     )
-    save_config(config_loc, config)
+    print config_loc
+    config.save()
     return config
 
-
-def save_config(loc, config):
-    with open(loc, 'w') as f:
-        MatrixConfig.to_file(config, f)
 
 
 def load_config(loc):
@@ -67,18 +66,27 @@ def configure_logging(logfile):
 
 def main(config):
     # setup api/endpoint
-    matrix = MatrixHttpApi(config.base_url, config.token)
+    if not config.token:
+        matrix = MatrixHttpApi(config.base_url)
+        res = matrix.login(login_type="m.login.password", user="neb", password="G@h0km<0n@")
+        log.debug("Login result: %r" % res)
+        config.token = res["access_token"]
+        config.save()
+        matrix.token = config.token
+    else:
+        matrix = MatrixHttpApi(config.base_url, config.token)
+
 
     log.debug("Setting up plugins...")
     plugins = [
         TimePlugin,
         Base64Plugin,
         GuessNumberPlugin,
-        JiraPlugin,
-        UrlPlugin,
-        GithubPlugin,
-        JenkinsPlugin,
-        PrometheusPlugin,
+        #JiraPlugin,
+        #UrlPlugin,
+        #GithubPlugin,
+        #JenkinsPlugin,
+        #PrometheusPlugin,
     ]
 
     # setup engine
@@ -118,6 +126,7 @@ if __name__ == '__main__':
     if args.config:
         log.info("Loading config from %s", args.config)
         config = load_config(args.config)
+        log.info("Config %r", config)
         if not config:
             log.info("Setting up for an existing account.")
             print "Config file could not be loaded."
@@ -128,8 +137,9 @@ if __name__ == '__main__':
             if hsurl.endswith("/"):
                 hsurl = hsurl[:-1]
             username = raw_input("Full user ID (e.g. @user:domain): ").strip()
-            token = raw_input("Access token: ").strip()
-            config = generate_config(hsurl, username, token, args.config)
+            password = raw_input("Password: ").strip()
+            admin = raw_input("Admin full ID (who able to invite bot): ").strip()
+            config = generate_config(hsurl, username, password, admin, args.config)
     else:
         a.print_help()
         print "You probably want to run 'python neb.py -c neb.config'"

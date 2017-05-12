@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="Matrix-NEB",
-    version="0.0.2",
+    version="0.0.3",
     description="A generic bot for Matrix",
     author="Kegan Dougal",
     author_email="kegsay@gmail.com",
@@ -16,6 +16,6 @@ setup(
         "python-dateutil"
     ],
     dependency_links=[
-        "https://github.com/matrix-org/matrix-python-sdk/tarball/v0.0.5#egg=matrix_client-0.0.5"
+        "https://github.com/matrix-org/matrix-python-sdk/tarball/v0.0.6#egg=matrix_client-0.0.6"
     ]
 )

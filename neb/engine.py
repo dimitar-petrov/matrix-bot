@@ -25,6 +25,7 @@ class Engine(object):
         self.webhook.start()
 
         # init the plugins
+        log.debug("Init plugins")
         for cls_name in self.plugin_cls:
             self.plugins[cls_name] = self.plugin_cls[cls_name](
                 self.matrix,
