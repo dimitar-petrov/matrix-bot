@@ -5,19 +5,12 @@ from matrix_client.api import MatrixHttpApi
 from matrix_client.errors import MatrixRequestError
 from neb.engine import Engine
 from neb.matrix import MatrixConfig
-from plugins.b64 import Base64Plugin
-from plugins.guess_number import GuessNumberPlugin
-from plugins.jenkins import JenkinsPlugin
-from plugins.jira import JiraPlugin
-from plugins.url import UrlPlugin
-from plugins.time_utils import TimePlugin
-from plugins.github import GithubPlugin
-from plugins.google import GooglePlugin
-from plugins.prometheus import PrometheusPlugin
 
+import inspect
 import logging
 import logging.handlers
 import time
+import os
 
 log = logging.getLogger(name=__name__)
 
@@ -83,24 +76,31 @@ def main(config):
     else:
         matrix = MatrixHttpApi(config.base_url, config.token)
 
-
-    log.debug("Setting up plugins...")
-    plugins = [
-        TimePlugin,
-        Base64Plugin,
-        GuessNumberPlugin,
-        GooglePlugin,
-        #JiraPlugin,
-        #UrlPlugin,
-        #GithubPlugin,
-        #JenkinsPlugin,
-        #PrometheusPlugin,
-    ]
-
     # setup engine
     engine = Engine(matrix, config)
-    for plugin in plugins:
-        engine.add_plugin(plugin)
+
+    # Dytnamic plugin load from plugins folder
+    lst = os.listdir("plugins")
+    for fil in lst:
+        name, ext = os.path.splitext(fil)
+        if not os.path.isdir(os.path.join("plugins", fil)) and not fil[0] == "_" and ext in (".py"):
+            try:
+                mod = __import__("plugins." + name, fromlist = ["*"])
+                for cls in  inspect.getmembers(mod, inspect.isclass):
+                    if hasattr(cls[1], "name"):
+                        if not config.plugins or cls[1].name in config.plugins:
+                            engine.add_plugin(cls[1])
+                            log.info("Load plugin %s (%s) from %s" % (
+                                cls[1].name, cls[0], os.path.join("plugins", fil)
+                            ))
+                        else:
+                            log.info("Skip plugin %s (%s) from %s - not listed in config" % (
+                                cls[1].name, cls[0], os.path.join("plugins", fil)
+                            ))
+            except ImportError as err:
+                log.error("Plugin module %s import error: %r" % (
+                    "plugins." + fil, err
+                ))
 
     engine.setup()
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
             config = generate_config(hsurl, username, password, admin, args.config)
     else:
         a.print_help()
-        print "You probably want to run 'python neb.py -c neb.config'"
+    print "You probably want to run 'python neb.py -c neb.config'"
 
     if config:
         main(config)

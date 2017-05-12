@@ -10,8 +10,9 @@ class MatrixConfig(object):
     PWD = "password"
     ADM = "admins"
     CIS = "case_insensitive"
+    PLG = "plugins"
 
-    def __init__(self, hs_url, user_id, password, admins, case_insensitive, conf_location, access_token=None):
+    def __init__(self, hs_url, user_id, password, admins, case_insensitive, conf_location, access_token=None, plugins=[]):
         self.user_id = user_id
         self.password = password
         self.base_url = hs_url
@@ -19,6 +20,7 @@ class MatrixConfig(object):
         self.token = access_token
         self.case_insensitive = case_insensitive
         self.conf_location = conf_location
+        self.plugins = plugins
 
     @classmethod
     def to_file(cls, config, f):
@@ -45,6 +47,13 @@ class MatrixConfig(object):
             token = None
         else:
             token = j[MatrixConfig.TOK]
+        
+        if not MatrixConfig.PLG in j:
+            plugins = None
+        else:
+            plugins = j[MatrixConfig.PLG]
+        
+
 
         return MatrixConfig(
             hs_url=hs_url,
@@ -53,7 +62,8 @@ class MatrixConfig(object):
             password=j[MatrixConfig.PWD],
             admins=j[MatrixConfig.ADM],
             case_insensitive=j[MatrixConfig.CIS] if MatrixConfig.CIS in j else False,
-            conf_location=f.name
+            conf_location=f.name,
+            plugins=plugins
         )
 
     def save(self):
@@ -64,5 +74,6 @@ class MatrixConfig(object):
                 MatrixConfig.USR: self.user_id,
                 MatrixConfig.PWD: self.password,
                 MatrixConfig.ADM: self.admins,
-                MatrixConfig.CIS: self.case_insensitive
+                MatrixConfig.CIS: self.case_insensitive,
+                MatrixConfig.PLG: self.plugins
             }, indent=4))

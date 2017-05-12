@@ -54,9 +54,6 @@ class Engine(object):
 
     def add_plugin(self, plugin):
         log.debug("add_plugin %s", plugin)
-        if not plugin.name:
-            raise NebError("No name for plugin %s" % plugin)
-
         self.plugin_cls[plugin.name] = plugin
 
     def parse_membership(self, event):
