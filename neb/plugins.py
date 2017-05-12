@@ -134,6 +134,32 @@ class Plugin(PluginInterface):
                     log.exception(e)
                     raise CommandNotFoundError(method.__doc__)
 
+        # if defined default command
+        if hasattr(self, "default_method"):
+            method = getattr(self, self.default_method)
+            remaining_args = [event] + args_array
+
+            # function params prefixed with "opt_" should be None if they
+            # are not specified. This makes cmd definitions a lot nicer for
+            # plugins rather than a generic arg array or no optional extras
+            fn_param_names = inspect.getargspec(method)[0][1:]  # remove self
+            if len(fn_param_names) > len(remaining_args):
+                # pad out the ones at the END marked "opt_" with None
+                for i in reversed(fn_param_names):
+                    if i.startswith("opt_"):
+                        remaining_args.append(None)
+                    else:
+                        break
+            try:
+                if remaining_args:
+                    return method(*remaining_args)
+                else:
+                    return method()
+            except TypeError as e:
+                log.exception(e)
+                raise CommandNotFoundError(method.__doc__)
+
+
         raise CommandNotFoundError("Unknown command")
 
 
