@@ -67,6 +67,30 @@ class Engine(object):
                     "Refusing invite, %s not in admin list. Event: %s",
                     user_id, event
                 )
+    def plugin_reply(self, responses):
+        log.debug("[Plugin-%s] Response => %s", cmd, responses)
+        if type(responses) == list:
+            for res in responses:
+                if type(res) in [str, unicode]:
+                    self.matrix.send_message(
+                        room,
+                        res,
+                        msgtype="m.notice"
+                    )
+                else:
+                    self.matrix.send_message_event(
+                    room, "m.room.message", res
+                )
+        elif type(responses) in [str, unicode]:
+            self.matrix.send_message(
+                room,
+                responses,
+                msgtype="m.notice"
+            )
+        else:
+            self.matrix.send_message_event(
+                room, "m.room.message", responses
+            )
 
     def parse_msg(self, event):
         body = event["content"]["body"].strip()
@@ -114,31 +138,9 @@ class Engine(object):
                             "Problem making request: (%s) %s" % (ex.code, ex.content),
                             msgtype="m.notice"
                         )
-
                     if responses:
-                        log.debug("[Plugin-%s] Response => %s", cmd, responses)
-                        if type(responses) == list:
-                            for res in responses:
-                                if type(res) in [str, unicode]:
-                                    self.matrix.send_message(
-                                        room,
-                                        res,
-                                        msgtype="m.notice"
-                                    )
-                                else:
-                                    self.matrix.send_message_event(
-                                        room, "m.room.message", res
-                                    )
-                        elif type(responses) in [str, unicode]:
-                            self.matrix.send_message(
-                                room,
-                                responses,
-                                msgtype="m.notice"
-                            )
-                        else:
-                            self.matrix.send_message_event(
-                                room, "m.room.message", responses
-                            )
+                        plugin_reply(responses)
+
             except NebError as ne:
                 self.matrix.send_message(room, ne.as_str(), msgtype="m.notice")
             except Exception as e:
@@ -151,7 +153,9 @@ class Engine(object):
         else:
             try:
                 for p in self.plugins:
-                    self.plugins[p].on_msg(event, body)
+                    responses = self.plugins[p].on_msg(event, body)
+                    if responses:
+                        plugin_reply(responses)
             except Exception as e:
                 log.exception(e)
 
