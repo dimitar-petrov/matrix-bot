@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = 'Slipeer@gmail.com'
-from neb.plugins import Plugin
-from neb.engine import KeyValueStore
+__author__ = 'Pavel Kardash <Slipeer@gmail.com>'
+from matrix_bot.mbot.plugins import Plugin
+from matrix_bot.mbot.engine import KeyValueStore
 
 import requests
 import logging

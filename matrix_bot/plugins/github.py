@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from neb.engine import KeyValueStore, RoomContextStore
-from neb.plugins import Plugin, admin_only
+from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.plugins import Plugin, admin_only
 
 from hashlib import sha1
 import hmac

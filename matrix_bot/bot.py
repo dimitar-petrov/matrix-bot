@@ -3,14 +3,15 @@ import argparse
 
 from matrix_client.api import MatrixHttpApi
 from matrix_client.errors import MatrixRequestError
-from neb.engine import Engine
-from neb.matrix import MatrixConfig
+from matrix_bot.mbot.engine import Engine
+from matrix_bot.mbot.matrix import MatrixConfig
 
 import inspect
 import logging
 import logging.handlers
 import time
 import os
+import sys
 
 log = logging.getLogger(name=__name__)
 
@@ -33,7 +34,13 @@ def load_config(loc):
     try:
         with open(loc, 'r') as f:
             return MatrixConfig.from_file(f)
+    except IOError as e:
+        log.error("IOError with config file: %r" % e )
+        pass
+    except ValueError as e:
+        log.error("ValueError with config file: %r" % e )
     except:
+        log.error("Unexpected Error with config file: %r" % sys.exc_info()[0] )
         pass
 
 
@@ -54,7 +61,7 @@ def configure_logging(logfile):
         logging.getLogger('').addHandler(handler)
 
 
-def main(config):
+def startup(config):
     # setup api/endpoint
     if not config.token:
         matrix = MatrixHttpApi(config.base_url)
@@ -109,9 +116,8 @@ def main(config):
 
     log.info("Terminating.")
 
-
-if __name__ == '__main__':
-    a = argparse.ArgumentParser("Runs NEB. See plugins for commands.")
+def main():
+    a = argparse.ArgumentParser("Runs Matrix-bot. See plugins for commands.")
     a.add_argument(
         "-c", "--config", dest="config",
         help="The config to create or read from."
@@ -121,10 +127,9 @@ if __name__ == '__main__':
         help="Log to this file."
     )
     args = a.parse_args()
-
     configure_logging(args.log)
-    log.info("  ===== NEB initialising ===== ")
-
+    log.info("  ===== Matrix-bot initialising ===== ")
+    log.debug("Started as user: %s" % os.getlogin())
     config = None
     if args.config:
         log.info("Loading config from %s", args.config)
@@ -133,8 +138,8 @@ if __name__ == '__main__':
         if not config:
             log.info("Setting up for an existing account.")
             print "Config file could not be loaded."
-            print ("NEB works with an existing Matrix account. "
-                "Please set up an account for NEB if you haven't already.'")
+            print ("Matrix-bot works with an existing Matrix account. "
+                "Please set up an account for Matrix-bot if you haven't already.'")
             print "The config for this account will be saved to '%s'" % args.config
             hsurl = raw_input("Home server URL (e.g. http://localhost:8008): ").strip()
             if hsurl.endswith("/"):
@@ -145,7 +150,10 @@ if __name__ == '__main__':
             config = generate_config(hsurl, username, password, admin, args.config)
     else:
         a.print_help()
-    print "You probably want to run 'python neb.py -c neb.config'"
-
+    print "You probably want to run 'python %s -c bot-config.json'" % os.path.basename(__file__)
     if config:
-        main(config)
+        startup(config)
+
+
+if __name__ == '__main__':
+    main()

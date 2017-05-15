@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from neb.plugins import Plugin
+from matrix_bot.mbot.plugins import Plugin
 
 import calendar
 import datetime

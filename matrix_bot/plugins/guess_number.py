@@ -1,4 +1,4 @@
-from neb.plugins import Plugin
+from matrix_bot.mbot.plugins import Plugin
 import collections
 import random
 

@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from matrix_client.api import MatrixRequestError
-from neb import NebError
-from neb.plugins import CommandNotFoundError
-from neb.webhook import NebHookServer
+from matrix_bot.mbot import NebError
+from matrix_bot.mbot.plugins import CommandNotFoundError
+from matrix_bot.mbot.webhook import NebHookServer
 
 import json
 import logging as log
