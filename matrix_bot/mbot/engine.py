@@ -69,7 +69,7 @@ class Engine(object):
                 )
 
     def parse_msg(self, event):
-        body = event["content"]["body"]
+        body = event["content"]["body"].strip()
         if (event["sender"] == self.config.user_id or
                 event["content"]["msgtype"] == "m.notice"):
             return
