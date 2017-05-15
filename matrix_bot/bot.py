@@ -5,6 +5,7 @@ from matrix_client.api import MatrixHttpApi
 from matrix_client.errors import MatrixRequestError
 from matrix_bot.mbot.engine import Engine
 from matrix_bot.mbot.matrix import MatrixConfig
+import matrix_bot
 
 import inspect
 import logging
@@ -84,10 +85,12 @@ def startup(config):
     engine = Engine(matrix, config)
 
     # Dytnamic plugin load from plugins folder
-    lst = os.listdir(os.path.join("matrix_bot","plugins"))
+    rootf = os.path.dirname(os.path.abspath(matrix_bot.__file__))
+    log.debug("Matrix_bot root folder: %s" % rootf)
+    lst = os.listdir(os.path.join(rootf,"plugins"))
     for fil in lst:
         name, ext = os.path.splitext(fil)
-        if not os.path.isdir(os.path.join("matrix_bot","plugins", fil)) and not fil[0] == "_" and ext in (".py"):
+        if not os.path.isdir(os.path.join(rootf,"plugins", fil)) and not fil[0] == "_" and ext in (".py"):
             try:
                 mod = __import__("matrix_bot.plugins." + name, fromlist = ["*"])
                 for cls in  inspect.getmembers(mod, inspect.isclass):
@@ -128,10 +131,21 @@ def main():
         "-l", "--log-file", dest="log",
         help="Log to this file."
     )
+    a.add_argument(
+        "-p", "--pid-file", dest="pid",
+        help="Save pid to this file."
+    )
     args = a.parse_args()
     configure_logging(args.log)
+    if args.pid:
+        if os.path.isfile(args.pid):
+            log.error("Pid file %s exists" % args.pid)
+        try:
+            file(args.pid, 'w').write(str(os.getpid()))
+        except:
+            log.error("Unexpected Error with pid file: %r" % sys.exc_info()[0] )
+
     log.info("  ===== Matrix-bot initialising ===== ")
-    log.debug("Started as user: %s" % os.getlogin())
     config = None
     if args.config:
         log.info("Loading config from %s", args.config)

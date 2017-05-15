@@ -6,7 +6,9 @@ Type=simple
 User=matrix-bot
 WorkingDirectory=/var/lib/matrix-bot
 EnvironmentFile=/etc/default/matrix-bot
-ExecStart=/usr/local/bin/matrix-bot -c /etc/matrix-bot/matrix-bot.json -l /var/log/matrix-bot.log
+PIDFile=/var/run/matrix-bot/matrix-bot.pid
+ExecStart=/usr/local/bin/matrix-bot -c /etc/matrix-bot/matrix-bot.json -l /var/log/matrix-bot.log -p /var/run/matrix-bot/matrix-bot.pid
+ExecStop=/bin/kill -9 `cat /var/run/matrix-bot/matrix-bot.pid` && /bin/rm -f /var/run/matrix-bot/matrix-bot.pid
 Restart=always
 RestartSec=3
 

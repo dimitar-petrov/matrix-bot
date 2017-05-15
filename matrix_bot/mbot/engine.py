@@ -9,7 +9,6 @@ import json
 import logging as log
 import pprint
 
-
 class Engine(object):
     """Orchestrates plugins and the matrix API/endpoints."""
     PREFIX = "!"
