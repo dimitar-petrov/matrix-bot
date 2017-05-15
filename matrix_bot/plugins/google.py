@@ -98,4 +98,3 @@ class GooglePlugin(Plugin):
         else:
             return "Nothing found..."
 
-4

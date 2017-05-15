@@ -22,7 +22,7 @@ class GuessNumberPlugin(Plugin):
 
     def cmd_new(self, event):
         """Start a new game. 'guessnumber new'"""
-        usr = event["user_id"]
+        usr = event["sender"]
         game_state = {
             "num": random.randint(0, GuessNumberPlugin.MAX_NUM),
             "attempts": 0
@@ -33,7 +33,7 @@ class GuessNumberPlugin(Plugin):
 
     def cmd_guess(self, event, num):
         """Make a guess. 'guessnumber guess <number>'"""
-        usr = event["user_id"]
+        usr = event["sender"]
 
         if usr not in self.games:
             return "You need to start a game first."
@@ -60,7 +60,7 @@ class GuessNumberPlugin(Plugin):
     def cmd_hint(self, event):
         """Get a hint. 'guessnumber hint'"""
         # hints give a 50% reduction, e.g. between 0-50, even/odd, ends with 12345
-        usr = event["user_id"]
+        usr = event["sender"]
 
         if usr not in self.games:
             return "You need to start a game first."
