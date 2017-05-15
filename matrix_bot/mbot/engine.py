@@ -68,7 +68,6 @@ class Engine(object):
                     user_id, event
                 )
     def plugin_reply(self, responses):
-        log.debug("[Plugin-%s] Response => %s", cmd, responses)
         if type(responses) == list:
             for res in responses:
                 if type(res) in [str, unicode]:
@@ -139,7 +138,8 @@ class Engine(object):
                             msgtype="m.notice"
                         )
                     if responses:
-                        plugin_reply(responses)
+                        log.debug("[Plugin-%s] Response => %s", cmd, responses)
+                        self.plugin_reply(responses)
 
             except NebError as ne:
                 self.matrix.send_message(room, ne.as_str(), msgtype="m.notice")
@@ -155,7 +155,8 @@ class Engine(object):
                 for p in self.plugins:
                     responses = self.plugins[p].on_msg(event, body)
                     if responses:
-                        plugin_reply(responses)
+                        log.debug("[Plugin-%s] Response => %s", body, responses)
+                        self.plugin_reply(responses)
             except Exception as e:
                 log.exception(e)
 
