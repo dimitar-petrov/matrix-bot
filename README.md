@@ -50,6 +50,10 @@ There *plugins* option in config:
  - if it empty all plugins will be loaded
  - if it contain plugins list - bot wil load only this plugins
 
+Note! In plugin list you must use names as in plugin class in ``name`` property!
+
+Bot stores plugins related data in working directory.
+
 Google
 ------
 
