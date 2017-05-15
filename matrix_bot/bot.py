@@ -65,6 +65,7 @@ def startup(config):
     # setup api/endpoint
     if not config.token:
         matrix = MatrixHttpApi(config.base_url)
+        matrix.validate_certificate(config.ssl_verify)
         login = config.user_id[1:].split(":")[0]
         try:
             res = matrix.login(login_type="m.login.password", user=login, password=config.password)
@@ -73,21 +74,22 @@ def startup(config):
             exit()
         log.debug("Login result: %r" % res)
         config.token = res["access_token"]
-        config.save()
         matrix.token = config.token
     else:
         matrix = MatrixHttpApi(config.base_url, config.token)
+        matrix.validate_certificate(config.ssl_verify)
 
+    config.save()
     # setup engine
     engine = Engine(matrix, config)
 
     # Dytnamic plugin load from plugins folder
-    lst = os.listdir("plugins")
+    lst = os.listdir(os.path.join("matrix_bot","plugins"))
     for fil in lst:
         name, ext = os.path.splitext(fil)
-        if not os.path.isdir(os.path.join("plugins", fil)) and not fil[0] == "_" and ext in (".py"):
+        if not os.path.isdir(os.path.join("matrix_bot","plugins", fil)) and not fil[0] == "_" and ext in (".py"):
             try:
-                mod = __import__("plugins." + name, fromlist = ["*"])
+                mod = __import__("matrix_bot.plugins." + name, fromlist = ["*"])
                 for cls in  inspect.getmembers(mod, inspect.isclass):
                     if hasattr(cls[1], "name"):
                         if not config.plugins or cls[1].name in config.plugins:
@@ -150,7 +152,7 @@ def main():
             config = generate_config(hsurl, username, password, admin, args.config)
     else:
         a.print_help()
-    print "You probably want to run 'python %s -c bot-config.json'" % os.path.basename(__file__)
+        print "You probably want to run 'python %s -c bot-config.json'" % os.path.basename(__file__)
     if config:
         startup(config)
 

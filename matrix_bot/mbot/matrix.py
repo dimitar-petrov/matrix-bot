@@ -11,8 +11,9 @@ class MatrixConfig(object):
     ADM = "admins"
     CIS = "case_insensitive"
     PLG = "plugins"
+    SSL = "cert_verify"
 
-    def __init__(self, hs_url, user_id, password, admins, case_insensitive, conf_location, access_token=None, plugins=[]):
+    def __init__(self, hs_url, user_id, password, admins, case_insensitive, conf_location, access_token=None, plugins=[], ssl_verify=True):
         self.user_id = user_id
         self.password = password
         self.base_url = hs_url
@@ -21,6 +22,7 @@ class MatrixConfig(object):
         self.case_insensitive = case_insensitive
         self.conf_location = conf_location
         self.plugins = plugins
+        self.ssl_verify = ssl_verify
 
     @classmethod
     def to_file(cls, config, f):
@@ -47,13 +49,16 @@ class MatrixConfig(object):
             token = None
         else:
             token = j[MatrixConfig.TOK]
-        
+
         if not MatrixConfig.PLG in j:
             plugins = None
         else:
             plugins = j[MatrixConfig.PLG]
-        
 
+        if not MatrixConfig.SSL in j:
+            ssl_verify = True
+        else:
+            ssl_verify = j[MatrixConfig.SSL]
 
         return MatrixConfig(
             hs_url=hs_url,
@@ -63,7 +68,8 @@ class MatrixConfig(object):
             admins=j[MatrixConfig.ADM],
             case_insensitive=j[MatrixConfig.CIS] if MatrixConfig.CIS in j else False,
             conf_location=f.name,
-            plugins=plugins
+            plugins=plugins,
+            ssl_verify=ssl_verify,
         )
 
     def save(self):
@@ -75,5 +81,6 @@ class MatrixConfig(object):
                 MatrixConfig.PWD: self.password,
                 MatrixConfig.ADM: self.admins,
                 MatrixConfig.CIS: self.case_insensitive,
-                MatrixConfig.PLG: self.plugins
+                MatrixConfig.PLG: self.plugins,
+                MatrixConfig.SSL: self.ssl_verify,
             }, indent=4))
