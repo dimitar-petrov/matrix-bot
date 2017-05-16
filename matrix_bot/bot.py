@@ -64,6 +64,7 @@ def configure_logging(logfile):
 
 def startup(config):
     # setup api/endpoint
+    login = config.user_id[1:].split(":")[0]
     if not config.token:
         matrix = MatrixHttpApi(config.base_url)
         matrix.validate_certificate(config.ssl_verify)
@@ -85,6 +86,12 @@ def startup(config):
         matrix.validate_certificate(config.ssl_verify)
 
     config.save()
+
+    # Update Display Name if needed
+    cur_dn = matrix.get_display_name(config.user_id)
+    if not login == cur_dn:
+        matrix.set_display_name(config.user_id, login)
+
     # setup engine
     engine = Engine(matrix, config)
 
