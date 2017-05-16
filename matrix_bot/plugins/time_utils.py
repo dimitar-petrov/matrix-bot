@@ -13,17 +13,24 @@ class TimePlugin(Plugin):
     time decode <unix timestamp> : Decode the unix timestamp and return the date.
     """
 
-    name="time"
+    name = "time"
 
     def cmd_encode(self, event, *args):
-        """Encode a time. Multiple different formats are supported, e.g. YYYY-MM-DD HH:MM:SS 'time encode <date>'"""
+        """
+            Encode a time.
+            Multiple different formats are supported,
+            e.g. YYYY-MM-DD HH:MM:SS 'time encode <date>'
+        """
         # use the body directly so spaces are handled correctly.
         date_str = event["content"]["body"][len("!time encode "):]
-        
+
         if date_str.lower().strip() == "now":
             now = time.time()
-            return "Parsed as %s\n%s" % (datetime.datetime.utcfromtimestamp(now), now)
-        
+            return "Parsed as %s\n%s" % (
+                datetime.datetime.utcfromtimestamp(now),
+                now
+            )
+
         try:
             d = parser.parse(date_str)
             ts = calendar.timegm(d.timetuple())
@@ -37,9 +44,12 @@ class TimePlugin(Plugin):
         try:
             ts = int(timestamp)
             if is_millis:
-                return datetime.datetime.utcfromtimestamp(ts/1000.0).strftime("%Y-%m-%d %H:%M:%S.%f")
+                return datetime.datetime.utcfromtimestamp(ts/1000.0).strftime(
+                    "%Y-%m-%d %H:%M:%S.%f"
+                )
             else:
-                return datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+                return datetime.datetime.utcfromtimestamp(ts).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
         except ValueError:
             return "Failed to parse '%s'" % timestamp
-

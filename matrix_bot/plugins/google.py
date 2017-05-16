@@ -13,13 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-__author__ = 'Pavel Kardash <Slipeer@gmail.com>'
 from matrix_bot.mbot.plugins import Plugin
 from matrix_bot.mbot.engine import KeyValueStore
-
 import requests
 import logging
+
+__author__ = 'Pavel Kardash <Slipeer@gmail.com>'
 log = logging.getLogger(name=__name__)
 
 
@@ -37,16 +36,21 @@ class GooglePlugin(Plugin):
         self.store = KeyValueStore("google.json")
 
         if not self.store.has("apiurl"):
-            self.store.set("apiurl", "https://www.googleapis.com/customsearch/v1")
+            self.store.set(
+                "apiurl", "https://www.googleapis.com/customsearch/v1"
+            )
 
         if not self.store.has("apikey"):
-            print "API key is required to search with google customserchapi."
+            print("API key is required to search with google customserchapi.")
             apikey = raw_input("Google Custom Search API key: ").strip()
             if apikey:
                 self.store.set("apikey", apikey)
 
         if not self.store.has("cx"):
-            print "Custom search engine ID required to search with google customserchapi."
+            print(
+                "Custom search engine ID required"
+                "to search with google customserchapi."
+            )
             cx = raw_input("Google Custom Search id (https://cse.google.com): ").strip()
             if cx:
                 self.store.set("cx", cx)
@@ -90,11 +94,15 @@ class GooglePlugin(Plugin):
             i = requests.get(r.json()["items"][0]["link"])
             ires = self.matrix.media_upload(i.content, r.json()["items"][0]["mime"])
             if "content_uri" in ires:
-                result = self.matrix.send_content(event["room_id"], ires["content_uri"], r.json()["items"][0]["title"], "m.image")
+                self.matrix.send_content(
+                    event["room_id"],
+                    ires["content_uri"],
+                    r.json()["items"][0]["title"],
+                    "m.image"
+                )
                 return None
             else:
                 log.error("Image upload error: %r" % ires)
                 return "Image upload error"
         else:
             return "Nothing found..."
-

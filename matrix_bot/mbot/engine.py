@@ -9,6 +9,7 @@ import json
 import logging as log
 import pprint
 
+
 class Engine(object):
     """Orchestrates plugins and the matrix API/endpoints."""
     PREFIX = "!"
@@ -67,7 +68,8 @@ class Engine(object):
                     "Refusing invite, %s not in admin list. Event: %s",
                     user_id, event
                 )
-    def plugin_reply(self, responses):
+
+    def plugin_reply(self, room, responses):
         if type(responses) == list:
             for res in responses:
                 if type(res) in [str, unicode]:
@@ -78,8 +80,8 @@ class Engine(object):
                     )
                 else:
                     self.matrix.send_message_event(
-                    room, "m.room.message", res
-                )
+                        room, "m.room.message", res
+                    )
         elif type(responses) in [str, unicode]:
             self.matrix.send_message(
                 room,
@@ -96,8 +98,8 @@ class Engine(object):
         if (event["sender"] == self.config.user_id or
                 event["content"]["msgtype"] == "m.notice"):
             return
+        room = event["room_id"]  # room_id added by us
         if body.startswith(Engine.PREFIX):
-            room = event["room_id"]  # room_id added by us
             try:
                 segments = body.split()
                 cmd = segments[0][1:]
@@ -122,7 +124,7 @@ class Engine(object):
                     try:
                         responses = plugin.run(
                             event,
-                            #unicode(" ".join(body.split()[1:]).encode("utf8"))
+                            # unicode(" ".join(body.split()[1:]).encode("utf8"))
                             " ".join(body.split()[1:])
                         )
                     except CommandNotFoundError as e:
@@ -139,7 +141,7 @@ class Engine(object):
                         )
                     if responses:
                         log.debug("[Plugin-%s] Response => %s", cmd, responses)
-                        self.plugin_reply(responses)
+                        self.plugin_reply(room, responses)
 
             except NebError as ne:
                 self.matrix.send_message(room, ne.as_str(), msgtype="m.notice")
@@ -156,7 +158,7 @@ class Engine(object):
                     responses = self.plugins[p].on_msg(event, body)
                     if responses:
                         log.debug("[Plugin-%s] Response => %s", body, responses)
-                        self.plugin_reply(responses)
+                        self.plugin_reply(room, responses)
             except Exception as e:
                 log.exception(e)
 
@@ -191,7 +193,8 @@ class Engine(object):
             events = rooms[room_id]["invite_state"]["events"]
             self.process_events(events, room_id)
 
-        # return early if we're performing an initial sync (ie: don't parse joined rooms, just drop the state)
+        # return early if we're performing an initial sync
+        # (ie: don't parse joined rooms, just drop the state)
         if initial_sync:
             return
 

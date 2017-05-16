@@ -21,14 +21,14 @@ class JenkinsPlugin(Plugin):
 
     # https://wiki.jenkins-ci.org/display/JENKINS/Notification+Plugin
 
-    #New events:
+    # New events:
     #    Type: org.matrix.neb.plugin.jenkins.projects.tracking
     #    State: Yes
     #    Content: {
     #        projects: [projectName1, projectName2, ...]
     #    }
 
-    #Webhooks:
+    # Webhooks:
     #    /neb/jenkins
 
     TRACKING = ["track", "tracking"]
@@ -54,7 +54,8 @@ class JenkinsPlugin(Plugin):
     def cmd_show(self, event, action):
         """Show information on projects or projects being tracked.
         Show which projects are being tracked. 'jenkins show tracking'
-        Show which proejcts are recognised so they could be tracked. 'jenkins show projects'
+        Show which proejcts are recognised so they could be tracked.
+        'jenkins show projects'
         """
         if action in self.TRACKING:
             return self._get_tracking(event["room_id"])
@@ -71,7 +72,7 @@ class JenkinsPlugin(Plugin):
             return self._get_tracking(event["room_id"])
 
         for project in args:
-            if not project in self.store.get("known_projects"):
+            if project not in self.store.get("known_projects"):
                 return "Unknown project name: %s." % project
 
         self._send_track_event(event["room_id"], args)

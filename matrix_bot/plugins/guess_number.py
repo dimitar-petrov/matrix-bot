@@ -1,6 +1,6 @@
 from matrix_bot.mbot.plugins import Plugin
-import collections
 import random
+
 
 class GuessNumberPlugin(Plugin):
     """Play a guess the number game.
@@ -19,7 +19,6 @@ class GuessNumberPlugin(Plugin):
         super(Plugin, self).__init__(*args, **kwargs)
         self.games = {}
 
-
     def cmd_new(self, event):
         """Start a new game. 'guessnumber new'"""
         usr = event["sender"]
@@ -28,8 +27,11 @@ class GuessNumberPlugin(Plugin):
             "attempts": 0
         }
         self.games[usr] = game_state
-        return ("Created a new game. Guess what the chosen number is between 0-%s. You have %s attempts." %
-        (GuessNumberPlugin.MAX_NUM, GuessNumberPlugin.ATTEMPTS))
+        return (
+            "Created a new game."
+            "Guess what the chosen number is between 0-%s. You have %s attempts." %
+            (GuessNumberPlugin.MAX_NUM, GuessNumberPlugin.ATTEMPTS)
+        )
 
     def cmd_guess(self, event, num):
         """Make a guess. 'guessnumber guess <number>'"""
@@ -98,12 +100,8 @@ class GuessNumberPlugin(Plugin):
         else:
             return "The last digit is either 5, 6, 7, 8, 9."
 
-
     def _odd_even(self, num):
         if num % 2 == 0:
             return "The number is even."
         else:
             return "The number is odd."
-
-
-

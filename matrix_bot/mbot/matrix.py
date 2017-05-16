@@ -13,7 +13,11 @@ class MatrixConfig(object):
     PLG = "plugins"
     SSL = "cert_verify"
 
-    def __init__(self, hs_url, user_id, password, admins, case_insensitive, conf_location, access_token=None, plugins=[], ssl_verify=True):
+    def __init__(
+        self, hs_url, user_id, password, admins,
+        case_insensitive, conf_location, access_token=None,
+        plugins=[], ssl_verify=True
+    ):
         self.user_id = user_id
         self.password = password
         self.base_url = hs_url
@@ -43,19 +47,21 @@ class MatrixConfig(object):
         hs_url = j[MatrixConfig.URL]
         if hs_url.endswith("/_matrix/client/api/v1"):
             hs_url = hs_url[:-22]
-            log.info("Detected legacy URL, using '%s' instead. Consider changing this in your configuration." % hs_url)
+            log.info(
+                "Detected legacy URL, using '%s' instead." % hs_url
+            )
 
-        if not MatrixConfig.TOK in j:
+        if MatrixConfig.TOK not in j:
             token = None
         else:
             token = j[MatrixConfig.TOK]
 
-        if not MatrixConfig.PLG in j:
+        if MatrixConfig.PLG not in j:
             plugins = None
         else:
             plugins = j[MatrixConfig.PLG]
 
-        if not MatrixConfig.SSL in j:
+        if MatrixConfig.SSL not in j:
             ssl_verify = True
         else:
             ssl_verify = j[MatrixConfig.SSL]

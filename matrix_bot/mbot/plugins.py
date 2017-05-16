@@ -159,7 +159,4 @@ class Plugin(PluginInterface):
                 log.exception(e)
                 raise CommandNotFoundError(method.__doc__)
 
-
         raise CommandNotFoundError("Unknown command")
-
-

@@ -17,7 +17,7 @@ class NebHookServer(threading.Thread):
         super(NebHookServer, self).__init__()
         self.port = port
         self.plugin_mappings = {
-        #    plugin_key : plugin_instance
+            #    plugin_key : plugin_instance
         }
 
         app.add_url_rule('/neb/<path:service>', '/neb/<path:service>',

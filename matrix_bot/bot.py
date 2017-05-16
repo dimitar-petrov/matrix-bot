@@ -16,6 +16,7 @@ import sys
 
 log = logging.getLogger(name=__name__)
 
+
 def generate_config(url, username, password, admin, config_loc):
     config = MatrixConfig(
             hs_url=url,
@@ -25,10 +26,9 @@ def generate_config(url, username, password, admin, config_loc):
             case_insensitive=False,
             conf_location=config_loc
     )
-    print config_loc
+    print(config_loc)
     config.save()
     return config
-
 
 
 def load_config(loc):
@@ -36,12 +36,12 @@ def load_config(loc):
         with open(loc, 'r') as f:
             return MatrixConfig.from_file(f)
     except IOError as e:
-        log.error("IOError with config file: %r" % e )
+        log.error("IOError with config file: %r" % e)
         pass
     except ValueError as e:
-        log.error("ValueError with config file: %r" % e )
+        log.error("ValueError with config file: %r" % e)
     except:
-        log.error("Unexpected Error with config file: %r" % sys.exc_info()[0] )
+        log.error("Unexpected Error with config file: %r" % sys.exc_info()[0])
         pass
 
 
@@ -69,7 +69,11 @@ def startup(config):
         matrix.validate_certificate(config.ssl_verify)
         login = config.user_id[1:].split(":")[0]
         try:
-            res = matrix.login(login_type="m.login.password", user=login, password=config.password)
+            res = matrix.login(
+                login_type="m.login.password",
+                user=login,
+                password=config.password
+            )
         except MatrixRequestError as err:
             log.error("Login error: %r" % err)
             exit()
@@ -87,13 +91,17 @@ def startup(config):
     # Dytnamic plugin load from plugins folder
     rootf = os.path.dirname(os.path.abspath(matrix_bot.__file__))
     log.debug("Matrix_bot root folder: %s" % rootf)
-    lst = os.listdir(os.path.join(rootf,"plugins"))
+    osppath = os.path.join(rootf, "plugins")
+    lst = os.listdir(osppath)
     for fil in lst:
         name, ext = os.path.splitext(fil)
-        if not os.path.isdir(os.path.join(rootf,"plugins", fil)) and not fil[0] == "_" and ext in (".py"):
+        if (
+            not os.path.isdir(os.path.join(osppath, fil)) and
+            not fil[0] == "_" and ext in (".py")
+        ):
             try:
-                mod = __import__("matrix_bot.plugins." + name, fromlist = ["*"])
-                for cls in  inspect.getmembers(mod, inspect.isclass):
+                mod = __import__("matrix_bot.plugins."+name, fromlist=["*"])
+                for cls in inspect.getmembers(mod, inspect.isclass):
                     if hasattr(cls[1], "name"):
                         if not config.plugins or cls[1].name in config.plugins:
                             engine.add_plugin(cls[1])
@@ -101,9 +109,11 @@ def startup(config):
                                 cls[1].name, cls[0], os.path.join("plugins", fil)
                             ))
                         else:
-                            log.info("Skip plugin %s (%s) from %s - not listed in config" % (
-                                cls[1].name, cls[0], os.path.join("plugins", fil)
-                            ))
+                            log.info(
+                                "Skip plugin %s (%s) from %s - not listed in config" % (
+                                    cls[1].name, cls[0], os.path.join("plugins", fil)
+                                )
+                            )
             except ImportError as err:
                 log.error("Plugin module %s import error: %r" % (
                     "plugins." + fil, err
@@ -120,6 +130,7 @@ def startup(config):
         time.sleep(5)
 
     log.info("Terminating.")
+
 
 def main():
     a = argparse.ArgumentParser("Runs Matrix-bot. See plugins for commands.")
@@ -143,7 +154,7 @@ def main():
         try:
             file(args.pid, 'w').write(str(os.getpid()))
         except:
-            log.error("Unexpected Error with pid file: %r" % sys.exc_info()[0] )
+            log.error("Unexpected Error with pid file: %r" % sys.exc_info()[0])
 
     log.info("  ===== Matrix-bot initialising ===== ")
     config = None
@@ -153,10 +164,12 @@ def main():
         log.info("Config %r", config)
         if not config:
             log.info("Setting up for an existing account.")
-            print "Config file could not be loaded."
-            print ("Matrix-bot works with an existing Matrix account. "
-                "Please set up an account for Matrix-bot if you haven't already.'")
-            print "The config for this account will be saved to '%s'" % args.config
+            print("Config file could not be loaded.")
+            print(
+                "Matrix-bot works with an existing Matrix account. "
+                "Please set up an account for Matrix-bot if you haven't already.'"
+            )
+            print("The config for this account will be saved to '%s'" % args.config)
             hsurl = raw_input("Home server URL (e.g. http://localhost:8008): ").strip()
             if hsurl.endswith("/"):
                 hsurl = hsurl[:-1]
@@ -166,7 +179,9 @@ def main():
             config = generate_config(hsurl, username, password, admin, args.config)
     else:
         a.print_help()
-        print "You probably want to run 'python %s -c bot-config.json'" % os.path.basename(__file__)
+        print(
+            "Usage: 'python %s -c bot-config.json'" % os.path.basename(__file__)
+        )
     if config:
         startup(config)
 

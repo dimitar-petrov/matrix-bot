@@ -20,4 +20,3 @@ class UrlPlugin(Plugin):
         """URL decode text. 'url decode <url encoded text>'"""
         # use the body directly so quotes are parsed correctly.
         return urllib.unquote(event["content"]["body"][12:])
-

@@ -22,14 +22,14 @@ class GithubPlugin(Plugin):
     github label add|remove owner/repo issue# label : Label an issue on Github.
     """
     name = "github"
-    #New events:
+    # New events:
     #    Type: org.matrix.neb.plugin.github.projects.tracking
     #    State: Yes
     #    Content: {
     #        projects: [projectName1, projectName2, ...]
     #    }
 
-    #Webhooks:
+    # Webhooks:
     #    /neb/github
     TYPE_TRACK = "org.matrix.neb.plugin.github.projects.tracking"
     TYPE_COLOR = "org.matrix.neb.plugin.github.projects.color"
@@ -183,7 +183,7 @@ class GithubPlugin(Plugin):
             return self._get_tracking(event["room_id"])
 
         for project in args:
-            if not project in self.store.get("known_projects"):
+            if project not in self.store.get("known_projects"):
                 return "Unknown project name: %s." % project
 
         self._send_track_event(event["room_id"], args)
@@ -226,8 +226,10 @@ class GithubPlugin(Plugin):
 
     @admin_only
     def cmd_label_remove(self, event, repo, issue_num, *args):
-        """Remove a label on an issue. Format: 'label remove <owner/repo> <issue num> <label> <label> <label>'
-        E.g. 'label remove matrix-org/synapse 323 bug p2 blocked'
+        """
+            Remove a label on an issue.
+            Format: 'label remove <owner/repo> <issue num> <label> <label> <label>'
+            E.g. 'label remove matrix-org/synapse 323 bug p2 blocked'
         """
         e = self._is_valid_issue_request(repo, issue_num)
         if e:
@@ -246,7 +248,7 @@ class GithubPlugin(Plugin):
                 errs.append(
                     "Problem removing label %s : HTTP %s" % (label, res.status_code)
                 )
-                return err
+                return errs
 
         if len(errs) == 0:
             return "Removed labels %s" % (json.dumps(args),)
@@ -314,7 +316,7 @@ class GithubPlugin(Plugin):
 
         if not issue_is_num:
             return "Issue number must be a number"
-        
+
         if not self.store.has("github_access_token"):
             return "This plugin isn't configured to interact with Github issues."
 
@@ -422,7 +424,6 @@ class GithubPlugin(Plugin):
         )
         self.send_message_to_repos(repo_name, msg)
 
-
     def on_receive_pull_request_comment(self, data):
         repo_name = data["repository"]["full_name"]
         username = data["sender"]["login"]
@@ -445,7 +446,6 @@ class GithubPlugin(Plugin):
             comment_url
         )
         self.send_message_to_repos(repo_name, msg)
-
 
     def on_receive_issue(self, data):
         action = data["action"]
@@ -473,7 +473,6 @@ class GithubPlugin(Plugin):
             except:
                 pass
 
-
         msg = "[<u>%s</u>] %s %s issue #%s: %s - %s" % (
             repo_name,
             user,
@@ -484,7 +483,6 @@ class GithubPlugin(Plugin):
         )
 
         self.send_message_to_repos(repo_name, msg)
-
 
     def on_receive_webhook(self, url, data, ip, headers):
         if self.store.get("secret_token"):
@@ -505,7 +503,6 @@ class GithubPlugin(Plugin):
                 "Received private repo event for %s", json_data["repository"].get("name")
             )
             return
-
 
         event_type = headers.get('X-GitHub-Event')
         if event_type == "pull_request":
@@ -574,7 +571,6 @@ class GithubPlugin(Plugin):
                     "author": cname,
                     "summary": c["message"]
                 })
-
 
         self.on_receive_github_push({
             "branch": branch,
