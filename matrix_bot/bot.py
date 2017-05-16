@@ -12,7 +12,8 @@ import logging
 import logging.handlers
 import time
 import os
-import sys
+# For ssl verify silence
+import warnings
 
 log = logging.getLogger(name=__name__)
 
@@ -46,14 +47,18 @@ def load_config(loc):
 
 
 def configure_logging(logfile):
-    log_format = "%(asctime)s %(levelname)s: %(message)s"
+    # not need timestamp for stdin
+    log_format = "%(levelname)s: %(message)s"
     logging.basicConfig(
         level=logging.DEBUG,
         format=log_format
     )
+    logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.ERROR)
+    warnings.simplefilter("once")
 
     if logfile:
-        formatter = logging.Formatter(log_format)
+        log_file_format = "%(asctime)s %(levelname)s: %(message)s"
+        formatter = logging.Formatter(log_file_format)
 
         # rotate logs (20MB, max 6 = 120MB)
         handler = logging.handlers.RotatingFileHandler(
@@ -64,7 +69,7 @@ def configure_logging(logfile):
 
 def startup(config):
     # setup api/endpoint
-    login = config.user_id[1:].split(":")[0]
+    config.login = config.user_id[1:].split(":")[0]
     if not config.token:
         matrix = MatrixHttpApi(config.base_url)
         matrix.validate_certificate(config.ssl_verify)
@@ -89,16 +94,17 @@ def startup(config):
 
     # Update Display Name if needed
     cur_dn = matrix.get_display_name(config.user_id)
-    if not login == cur_dn:
-        matrix.set_display_name(config.user_id, login)
+    if not config.login == cur_dn:
+        matrix.set_display_name(config.user_id, config.login)
+
+    # root path for plugin search and locale load
+    config.rootf = os.path.dirname(os.path.abspath(matrix_bot.__file__))
+    log.debug("Matrix_bot root folder: %s" % config.rootf)
 
     # setup engine
     engine = Engine(matrix, config)
-
     # Dytnamic plugin load from plugins folder
-    rootf = os.path.dirname(os.path.abspath(matrix_bot.__file__))
-    log.debug("Matrix_bot root folder: %s" % rootf)
-    osppath = os.path.join(rootf, "plugins")
+    osppath = os.path.join(config.rootf, "plugins")
     lst = os.listdir(osppath)
     for fil in lst:
         name, ext = os.path.splitext(fil)

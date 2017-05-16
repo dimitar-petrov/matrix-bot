@@ -8,6 +8,8 @@ from matrix_bot.mbot.webhook import NebHookServer
 import json
 import logging as log
 import pprint
+from matrix_bot.mbot.tools import i18n
+import os
 
 
 class Engine(object):
@@ -20,6 +22,7 @@ class Engine(object):
         self.config = config
         self.matrix = matrix_api
         self.sync_token = None  # set later by initial sync
+        self.tr = i18n(config, __name__)
 
     def setup(self):
         self.webhook = NebHookServer(8500)
@@ -48,7 +51,7 @@ class Engine(object):
 
     def _help(self):
         return (
-            "Installed plugins: %s - Type '%shelp <plugin_name>' for more." %
+            self.tr.trans("Installed plugins: %s - Type '%shelp <plugin_name>' for more.") %
             (self.plugins.keys(), Engine.PREFIX)
         )
 
@@ -99,19 +102,28 @@ class Engine(object):
                 event["content"]["msgtype"] == "m.notice"):
             return
         room = event["room_id"]  # room_id added by us
+        mention = body.find(self.config.login+":")+1
         if body.startswith(Engine.PREFIX):
+            # command in line
             try:
                 segments = body.split()
                 cmd = segments[0][1:]
                 if self.config.case_insensitive:
                     cmd = cmd.lower()
 
+                # try untranslate CMD
+                self.tr.detect_lang(cmd)
+                cmd = self.tr.untrans(cmd)
+
                 if cmd == "help":
                     if len(segments) == 2 and segments[1] in self.plugins:
                         # return help on a plugin
                         self.matrix.send_message(
                             room,
-                            self.plugins[segments[1]].__doc__,
+                            self.tr.trans(
+                                self.plugins[segments[1]].__doc__,
+                                "matrix_bot.plugins."+self.plugins[segments[1]].name
+                            ),
                             msgtype="m.notice"
                         )
                     else:
@@ -120,12 +132,11 @@ class Engine(object):
                 elif cmd in self.plugins:
                     plugin = self.plugins[cmd]
                     responses = None
-
                     try:
                         responses = plugin.run(
                             event,
-                            # unicode(" ".join(body.split()[1:]).encode("utf8"))
-                            " ".join(body.split()[1:])
+                            #unicode(" ".join(body.split()[1:]).encode("utf8"))
+                            ' '.join(body.split()[1:])
                         )
                     except CommandNotFoundError as e:
                         self.matrix.send_message(
@@ -140,7 +151,7 @@ class Engine(object):
                             msgtype="m.notice"
                         )
                     if responses:
-                        log.debug("[Plugin-%s] Response => %s", cmd, responses)
+                        log.debug("[Plugin-%s] Response => %r", cmd, responses)
                         self.plugin_reply(room, responses)
 
             except NebError as ne:
@@ -152,7 +163,37 @@ class Engine(object):
                     "Fatal error when processing command.",
                     msgtype="m.notice"
                 )
+
+        elif mention:
+            try:
+                for p in self.plugins:
+                    responses = self.plugins[p].on_mention(event, body[mention-1:])
+                    if responses:
+                        log.debug("[Plugin-%s] Response => %s", body[mention-1:], responses)
+                        self.plugin_reply(room, responses)
+            except Exception as e:
+                log.exception(e)
+
+            """
+                appealdn = body.find(self.config.login+": ")+1
+            # appeal to bot by display name
+            com = body[appealdn+len(self.config.login)+1:]
+            lang = detect(com)
+            log.debug("{{Name}}: %s" % __name__)
+            log.debug("{{locale path}}: %s" % os.path.join(self.config.rootf,"locale"))
+            trans = gettext.translation(__name__, os.path.join(self.config.rootf,"locale"), languages=[lang,'en'])
+            _ = trans.ugettext
+            trans.install()
+            log.debug("{{Translate}}: %s" % _(com.split()[0]))
+            log.debug("{{Trans obj}}: %r" % trans._catalog)
+            log.debug("{{Trans obj dir}}: %r" % dir(trans._catalog))
+            untrans = self._find_key(trans._catalog, _(com.split()[0]))
+            string = body[appealdn+len(self.config.login)+1:]
+            string = detect(string)+" "+ untrans
+            self.matrix.send_message(room, string, msgtype="m.notice")
+            """
         else:
+            # on_msg() process for loaded plugins
             try:
                 for p in self.plugins:
                     responses = self.plugins[p].on_msg(event, body)
@@ -304,3 +345,4 @@ class KeyValueStore(object):
 
     def get(self, key):
         return self.config[key]
+

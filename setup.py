@@ -9,7 +9,7 @@ def read(fname):
 
 setup(
     name="matrix-bot",
-    version="0.0.4",
+    version="0.0.5",
     description="A bot for Matrix",
     long_description=read('README.md'),
     author=["Kegan Dougal", "Pavel Kardash"],
@@ -20,7 +20,9 @@ setup(
     install_requires=[
         "matrix_client",
         "Flask",
-        "python-dateutil"
+        "python-dateutil",
+        "gettext",
+        "langdetect"
     ],
     dependency_links=[
         "https://github.com/matrix-org/matrix-python-sdk/tarball/v0.0.6#egg=matrix_client-0.0.6"

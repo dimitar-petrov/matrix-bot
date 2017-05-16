@@ -14,9 +14,9 @@ class UrlPlugin(Plugin):
     def cmd_encode(self, event, *args):
         """URL encode text. 'url encode <text>'"""
         # use the body directly so quotes are parsed correctly.
-        return urllib.quote(event["content"]["body"][12:])
+        return urllib.quote(u' '.join(args).encode("utf8"))
 
     def cmd_decode(self, event, *args):
         """URL decode text. 'url decode <url encoded text>'"""
         # use the body directly so quotes are parsed correctly.
-        return urllib.unquote(event["content"]["body"][12:])
+        return urllib.unquote(u' '.join(args).encode("utf8"))
