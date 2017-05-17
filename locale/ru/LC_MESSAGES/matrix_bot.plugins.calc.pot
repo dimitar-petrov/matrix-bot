@@ -1,0 +1,31 @@
+# Localization file for matrix bot Plugin
+# Copyright 2017 Slipeer
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1\n"
+"POT-Creation-Date: 2017-05-16 12:05+MSK\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: <slipeer@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: UTF-8\n"
+"Generated-By: handmade\n"
+
+msgid "Unknown command"
+msgstr "Неизвестная команда"
+
+msgid "Try to Calculate expression.\n    Enter a mathematical expression\n    and complete it with a = sign.\n    If the expression can be computed,\n    you will see the result."
+msgstr "Плагин пытается вычислить математическое выражение.\n    Введите математическое выражение\n    и завершите его знаком =\n    если выражение может быть вычислено вы получите результат."
+
