@@ -2,11 +2,10 @@
 from jinja2 import Template
 import json
 from matrix_client.api import MatrixRequestError
-from neb.engine import KeyValueStore, RoomContextStore
-from neb.plugins import Plugin, admin_only
+from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.plugins import Plugin, admin_only
 from Queue import PriorityQueue
 from threading import Thread
-
 
 import time
 import logging as log
@@ -15,14 +14,12 @@ queue = PriorityQueue()
 
 
 class PrometheusPlugin(Plugin):
-    """Plugin for interacting with Prometheus.
-    """
+    """Plugin for interacting with Prometheus."""
     name = "prometheus"
 
-    #Webhooks:
-        #    /neb/prometheus
+    # Webhooks:
+    #    /neb/prometheus
     TYPE_TRACK = "org.matrix.neb.plugin.prometheus.projects.tracking"
-
 
     def __init__(self, *args, **kwargs):
         super(PrometheusPlugin, self).__init__(*args, **kwargs)
@@ -51,16 +48,20 @@ class PrometheusPlugin(Plugin):
         template = Template(self.store.get("message_template"))
         for alert in json_data.get("alert", []):
             for room_id in self.rooms.get_room_ids():
-                log.debug("queued message for room " + room_id + " at " + str(self.queue_counter) + ": %s", alert)
+                log.debug(
+                    "Queued message for room "
+                    + room_id + " at "
+                    + str(self.queue_counter) + ": %s",
+                    alert
+                )
                 queue.put((self.queue_counter, room_id, template.render(alert)))
                 self.queue_counter += 1
 
 
 class MessageConsumer(Thread):
-    """ This class consumes the produced messages
-        also will try to resend the messages that
-        are failed for instance when the server was down.
-    """
+    """This class consumes the produced messages
+    also will try to resend the messages that
+    are failed for instance when the server was down."""
 
     INITIAL_TIMEOUT_S = 5
     TIMEOUT_INCREMENT_S = 5
@@ -76,7 +77,12 @@ class MessageConsumer(Thread):
         log.debug("Starting consumer thread")
         while True:
             priority, room_id, message = queue.get()
-            log.debug("Popped message for room " + room_id + " at position " + str(priority) + ": %s", message)
+            log.debug(
+                "Popped message for room "
+                + room_id + " at position "
+                + str(priority) + ": %s",
+                message
+            )
             try:
                 self.send_message(room_id, message)
                 timeout = self.INITIAL_TIMEOUT_S

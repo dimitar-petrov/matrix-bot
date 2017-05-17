@@ -55,7 +55,8 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-.log
+*.log
 config.json
 github.json
 jira.json
+TODO

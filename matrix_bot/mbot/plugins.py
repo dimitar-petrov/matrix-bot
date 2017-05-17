@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Notes:
 # matrix_endpoint
 #   listen_for(["event.type", "event.type"])
@@ -10,7 +11,7 @@
 from functools import wraps
 import inspect
 import json
-import shlex
+from matrix_bot.mbot.tools import locale
 
 import logging as log
 
@@ -37,6 +38,7 @@ class PluginInterface(object):
         self.matrix = matrix_api
         self.config = config
         self.webhook = web_hook_server
+        self.tr = locale(config, "matrix_bot.plugins."+self.name)
 
     def run(self, event, arg_str):
         """Run the requested command.
@@ -45,7 +47,7 @@ class PluginInterface(object):
             event(dict): The raw event
             arg_str(list<str>): The parsed arguments from the event
         Returns:
-            str: The message to respond with.
+            str: The message to respond with as notice.
             list<str>: The messages to respond with.
             dict : The m.room.message content to respond with.
         """
@@ -69,7 +71,23 @@ class PluginInterface(object):
         pass
 
     def on_msg(self, event, body):
-        """Received an m.room.message event."""
+        """Received an m.room.message event.
+
+        Args:
+            event(dict): The raw event
+            body(str): Unformated message body
+        """
+        pass
+
+    def is_mentioned(self, body):
+        """Return mentioned text if Bot mentioned by display name or False
+
+        Args:
+            body(str): Unformated message body
+        Returns:
+            str: mentioned text
+            False: if not mentioned
+        """
         pass
 
     def get_webhook_key(self):
@@ -93,25 +111,35 @@ class PluginInterface(object):
 class Plugin(PluginInterface):
 
     def run(self, event, arg_str):
-        args_array = [arg_str.encode("utf8")]
+
+        def is_ascii(s):
+            """ Check that string pure ascii """
+            return all(ord(c) < 128 for c in s)
+
+        args_array = [arg_str]
         try:
-            args_array = shlex.split(arg_str.encode("utf8"))
+            args_array = arg_str.split()
         except ValueError:
             pass  # may be 1 arg without need for quotes
 
+        self.tr.detect_lang(event["content"]["body"].strip())
         if len(args_array) == 0:
-            raise CommandNotFoundError(self.__doc__)
+            raise CommandNotFoundError(self.tr.trans(self.__doc__))
 
         # Structure is cmd_foo_bar_baz for "!foo bar baz"
         # This starts by assuming a no-arg cmd then getting progressively
         # more general until no args remain (in which case there isn't a match)
         for index, arg in enumerate(args_array):
-            possible_method = "cmd_" + "_".join(args_array[:(len(args_array) - index)])
+            possible_method = '_'.join(args_array[:(len(args_array) - index)])
             if self.config.case_insensitive:
                 possible_method = possible_method.lower()
+            possible_method = self.tr.untrans(possible_method)
+            if not is_ascii(possible_method):
+                continue
+            possible_method = 'cmd_'+possible_method
             if hasattr(self, possible_method):
                 method = getattr(self, possible_method)
-                remaining_args = [event] + args_array[len(args_array) - index:]
+                remaining_args = args_array[len(args_array) - index:]
 
                 # function params prefixed with "opt_" should be None if they
                 # are not specified. This makes cmd definitions a lot nicer for
@@ -120,19 +148,19 @@ class Plugin(PluginInterface):
                 if len(fn_param_names) > len(remaining_args):
                     # pad out the ones at the END marked "opt_" with None
                     for i in reversed(fn_param_names):
-                        if i.startswith("opt_"):
+                        if i.startswith('opt_'):
                             remaining_args.append(None)
                         else:
                             break
 
                 try:
                     if remaining_args:
-                        return method(*remaining_args)
+                        return method(event, *remaining_args)
                     else:
-                        return method()
+                        return method(event)
                 except TypeError as e:
                     log.exception(e)
-                    raise CommandNotFoundError(method.__doc__)
+                    raise CommandNotFoundError(self.tr.trans(method.__doc__))
 
         # if defined default command
         if hasattr(self, "default_method"):
@@ -157,9 +185,13 @@ class Plugin(PluginInterface):
                     return method()
             except TypeError as e:
                 log.exception(e)
-                raise CommandNotFoundError(method.__doc__)
+                raise CommandNotFoundError(self.tr.trans(method.__doc__))
 
+        raise CommandNotFoundError(self.tr.trans("Unknown command"))
 
-        raise CommandNotFoundError("Unknown command")
-
-
+    def is_mentioned(self, body):
+        mention = body.find(self.config.login+":")+1
+        if mention:
+            return body[mention-1:]
+        else:
+            return False

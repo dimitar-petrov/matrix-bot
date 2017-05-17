@@ -1,13 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from matrix_client.api import MatrixRequestError
-from neb import NebError
-from neb.plugins import CommandNotFoundError
-from neb.webhook import NebHookServer
+from matrix_client.api import MatrixError, MatrixRequestError
+from matrix_bot.mbot import NebError
+from matrix_bot.mbot.plugins import CommandNotFoundError
+from matrix_bot.mbot.webhook import NebHookServer
 
 import json
 import logging as log
 import pprint
+from matrix_bot.mbot.tools import locale
 
 
 class Engine(object):
@@ -20,6 +21,7 @@ class Engine(object):
         self.config = config
         self.matrix = matrix_api
         self.sync_token = None  # set later by initial sync
+        self.tr = locale(config, __name__)
 
     def setup(self):
         self.webhook = NebHookServer(8500)
@@ -48,8 +50,9 @@ class Engine(object):
 
     def _help(self):
         return (
-            "Installed plugins: %s - Type '%shelp <plugin_name>' for more." %
-            (self.plugins.keys(), Engine.PREFIX)
+            self.tr.trans(
+                "Installed plugins: %s - Type '%shelp <plugin_name>' for more."
+            ) % (self.plugins.keys(), Engine.PREFIX)
         )
 
     def add_plugin(self, plugin):
@@ -69,25 +72,57 @@ class Engine(object):
                     user_id, event
                 )
 
+    def plugin_reply(self, room, responses):
+        if type(responses) == list:
+            for res in responses:
+                if type(res) in [str, unicode]:
+                    self.matrix.send_message(
+                        room,
+                        res,
+                        msgtype="m.notice"
+                    )
+                else:
+                    self.matrix.send_message_event(
+                        room, "m.room.message", res
+                    )
+        elif type(responses) in [str, unicode]:
+            self.matrix.send_message(
+                room,
+                responses,
+                msgtype="m.notice"
+                )
+        else:
+            self.matrix.send_message_event(
+                room, "m.room.message", responses
+            )
+
     def parse_msg(self, event):
-        body = event["content"]["body"]
+        body = event["content"]["body"].strip()
         if (event["sender"] == self.config.user_id or
                 event["content"]["msgtype"] == "m.notice"):
             return
+        room = event["room_id"]  # room_id added by us
         if body.startswith(Engine.PREFIX):
-            room = event["room_id"]  # room_id added by us
+            # command in line
             try:
                 segments = body.split()
                 cmd = segments[0][1:]
                 if self.config.case_insensitive:
                     cmd = cmd.lower()
 
+                # try untranslate CMD
+                self.tr.detect_lang(cmd)
+                cmd = self.tr.untrans(cmd)
+
                 if cmd == "help":
                     if len(segments) == 2 and segments[1] in self.plugins:
                         # return help on a plugin
                         self.matrix.send_message(
                             room,
-                            self.plugins[segments[1]].__doc__,
+                            self.tr.trans(
+                                self.plugins[segments[1]].__doc__,
+                                "matrix_bot.plugins."+self.plugins[segments[1]].name
+                            ),
                             msgtype="m.notice"
                         )
                     else:
@@ -96,51 +131,32 @@ class Engine(object):
                 elif cmd in self.plugins:
                     plugin = self.plugins[cmd]
                     responses = None
-
                     try:
                         responses = plugin.run(
                             event,
-                            #unicode(" ".join(body.split()[1:]).encode("utf8"))
-                            " ".join(body.split()[1:])
+                            # unicode(" ".join(body.split()[1:]).encode("utf8"))
+                            ' '.join(body.split()[1:])
                         )
                     except CommandNotFoundError as e:
+                        log.exception(e)
                         self.matrix.send_message(
                             room,
                             str(e),
                             msgtype="m.notice"
                         )
                     except MatrixRequestError as ex:
+                        log.exception(ex)
                         self.matrix.send_message(
                             room,
                             "Problem making request: (%s) %s" % (ex.code, ex.content),
                             msgtype="m.notice"
                         )
-
                     if responses:
-                        log.debug("[Plugin-%s] Response => %s", cmd, responses)
-                        if type(responses) == list:
-                            for res in responses:
-                                if type(res) in [str, unicode]:
-                                    self.matrix.send_message(
-                                        room,
-                                        res,
-                                        msgtype="m.notice"
-                                    )
-                                else:
-                                    self.matrix.send_message_event(
-                                        room, "m.room.message", res
-                                    )
-                        elif type(responses) in [str, unicode]:
-                            self.matrix.send_message(
-                                room,
-                                responses,
-                                msgtype="m.notice"
-                            )
-                        else:
-                            self.matrix.send_message_event(
-                                room, "m.room.message", responses
-                            )
+                        log.debug("[Plugin-%s] Response => %r", cmd, responses)
+                        self.plugin_reply(room, responses)
+
             except NebError as ne:
+                log.exception(ne)
                 self.matrix.send_message(room, ne.as_str(), msgtype="m.notice")
             except Exception as e:
                 log.exception(e)
@@ -150,9 +166,13 @@ class Engine(object):
                     msgtype="m.notice"
                 )
         else:
+            # on_msg() process for loaded plugins
             try:
                 for p in self.plugins:
-                    self.plugins[p].on_msg(event, body)
+                    responses = self.plugins[p].on_msg(event, body)
+                    if responses:
+                        log.debug("[Plugin-%s] Response => %s", p, responses)
+                        self.plugin_reply(room, responses)
             except Exception as e:
                 log.exception(e)
 
@@ -175,7 +195,12 @@ class Engine(object):
 
     def event_loop(self):
         while True:
-            j = self.matrix.sync(timeout_ms=30000, since=self.sync_token)
+            try:
+                j = self.matrix.sync(timeout_ms=30000, since=self.sync_token)
+            except MatrixError as ex:
+                log.exception("Matrix Error %r" % ex)
+            except Exception as e:
+                log.error("Error when matrix sync %r" % e)
             self.parse_sync(j)
 
     def parse_sync(self, sync_result, initial_sync=False):
@@ -187,7 +212,8 @@ class Engine(object):
             events = rooms[room_id]["invite_state"]["events"]
             self.process_events(events, room_id)
 
-        # return early if we're performing an initial sync (ie: don't parse joined rooms, just drop the state)
+        # return early if we're performing an initial sync
+        # (ie: don't parse joined rooms, just drop the state)
         if initial_sync:
             return
 

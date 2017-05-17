@@ -7,15 +7,38 @@ It appeared because I'm sad to see that NEB is obsoleted by go-neb `Issue#21 <ht
 Setup
 =====
 
-Run:
+1. To install python package run:
 
-    ``python neb.py -c <config location> [ -l <log location> ]``
+    pip install https://github.com/slipeer/Matrix-NEB/tarball/master
+
+2. To start bot run:
+
+    matrix-bot -c <config location> [ -l <log location> ]
 
 If the config file cannot be found, you will be asked to enter some settings for Bot and for loaded plugins (if nesesasry fo plugin).
 
 Invite bot to room can only users, specified in *admins* list in Bot config
 
 Create a room and invite Bt to it, and then type ``!help`` for a list of valid commands.
+
+Register User for Bot
+=====================
+
+To register user for bot use script:
+
+    register_new_matrix_user -u <username> -p <password> -a -c <path to homeserver.yaml with registration_shared_secret> <server URL>
+
+or
+
+    register_new_matrix_user -u <username> -p <password> -a -k <registration_shared_secret value from homeserver.yaml> <server URL>
+
+
+Uninstall
+=========
+
+Installed python package can be removed by:
+
+    pip uninstall matrix_bot
 
 
 
@@ -26,6 +49,10 @@ There *plugins* option in config:
 
  - if it empty all plugins will be loaded
  - if it contain plugins list - bot wil load only this plugins
+
+Note! In plugin list you must use names as in plugin class in ``name`` property!
+
+Bot stores plugins related data in working directory.
 
 Google
 ------
@@ -67,3 +94,8 @@ URL
 B64
 ---
  - Provides base64 encoding/decoding.
+
+Template
+--------
+ - A plug-in template that describes the main features
+ - Start developing your plug-in from it
