@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from matrix_client.api import MatrixRequestError
+from matrix_client.api import MatrixError, MatrixRequestError
 from matrix_bot.mbot import NebError
 from matrix_bot.mbot.plugins import CommandNotFoundError
 from matrix_bot.mbot.webhook import NebHookServer
@@ -90,7 +90,7 @@ class Engine(object):
                 room,
                 responses,
                 msgtype="m.notice"
-            )
+                )
         else:
             self.matrix.send_message_event(
                 room, "m.room.message", responses
@@ -138,12 +138,14 @@ class Engine(object):
                             ' '.join(body.split()[1:])
                         )
                     except CommandNotFoundError as e:
+                        log.exception(e)
                         self.matrix.send_message(
                             room,
                             str(e),
                             msgtype="m.notice"
                         )
                     except MatrixRequestError as ex:
+                        log.exception(ex)
                         self.matrix.send_message(
                             room,
                             "Problem making request: (%s) %s" % (ex.code, ex.content),
@@ -154,6 +156,7 @@ class Engine(object):
                         self.plugin_reply(room, responses)
 
             except NebError as ne:
+                log.exception(ne)
                 self.matrix.send_message(room, ne.as_str(), msgtype="m.notice")
             except Exception as e:
                 log.exception(e)
@@ -192,7 +195,12 @@ class Engine(object):
 
     def event_loop(self):
         while True:
-            j = self.matrix.sync(timeout_ms=30000, since=self.sync_token)
+            try:
+                j = self.matrix.sync(timeout_ms=30000, since=self.sync_token)
+            except MatrixError as ex:
+                log.exception("Matrix Error %r" % ex)
+            except Exception as e:
+                log.error("Error when matrix sync %r" % e)
             self.parse_sync(j)
 
     def parse_sync(self, sync_result, initial_sync=False):

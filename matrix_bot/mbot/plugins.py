@@ -47,7 +47,7 @@ class PluginInterface(object):
             event(dict): The raw event
             arg_str(list<str>): The parsed arguments from the event
         Returns:
-            str: The message to respond with.
+            str: The message to respond with as notice.
             list<str>: The messages to respond with.
             dict : The m.room.message content to respond with.
         """
@@ -71,11 +71,23 @@ class PluginInterface(object):
         pass
 
     def on_msg(self, event, body):
-        """Received an m.room.message event."""
+        """Received an m.room.message event.
+
+        Args:
+            event(dict): The raw event
+            body(str): Unformated message body
+        """
         pass
 
     def is_mentioned(self, body):
-        """Return mentioned text if Bot mentioned by display name or False"""
+        """Return mentioned text if Bot mentioned by display name or False
+
+        Args:
+            body(str): Unformated message body
+        Returns:
+            str: mentioned text
+            False: if not mentioned
+        """
         pass
 
     def get_webhook_key(self):
