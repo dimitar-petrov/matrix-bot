@@ -11,7 +11,6 @@
 from functools import wraps
 import inspect
 import json
-import os
 from matrix_bot.mbot.tools import locale
 
 import logging as log
@@ -96,6 +95,7 @@ class PluginInterface(object):
         """
         pass
 
+
 class Plugin(PluginInterface):
 
     def run(self, event, arg_str):
@@ -127,9 +127,7 @@ class Plugin(PluginInterface):
             possible_method = 'cmd_'+possible_method
             if hasattr(self, possible_method):
                 method = getattr(self, possible_method)
-                #remaining_args = [event] + args_array[len(args_array) - index:]
                 remaining_args = args_array[len(args_array) - index:]
-                #remaining_args = [' '.join(remaining_args)] + remaining_args
 
                 # function params prefixed with "opt_" should be None if they
                 # are not specified. This makes cmd definitions a lot nicer for
@@ -185,4 +183,3 @@ class Plugin(PluginInterface):
             return body[mention-1:]
         else:
             return False
-

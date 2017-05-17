@@ -18,6 +18,7 @@ import os
 from langdetect import detect
 import logging as log
 
+
 class locale(object):
     """ Translator tool class """
 
@@ -37,42 +38,63 @@ class locale(object):
         return next((k for k, v in input_dict.items() if v == value), None)
 
     def untrans(self, cmd, module=None):
-        """ Backward translate cmd from detected language for module """
+        """Backward translate cmd from detected language for module."""
         if not module:
             module = self.name
         uncmd = None
         self.detect_lang(cmd)
         try:
-            trans = gettext.translation(module, os.path.join(self.config.rootf,"locale"), languages=[self.lang,'en'])
+            trans = gettext.translation(
+                module,
+                os.path.join(self.config.rootf, "locale"),
+                languages=[self.lang, 'en']
+            )
             trans.install()
             uncmd = self._find_key(trans._catalog, trans.ugettext(cmd))
         except IOError as e:
-            log.warn("Translation for module %s non present in %s." % (module, os.path.join(self.config.rootf,"locale")))
+            log.warn(
+                "Translation for module %s non present in %s."
+                % (module, os.path.join(self.config.rootf, "locale"))
+            )
         except Exception as e:
-            log.error("UnTranslation: |%s|. For module: %s Exception: %r" % (cmd, module, e))
+            log.error(
+                "UnTranslation: |%s|. For module: %s Exception: %r" % (cmd, module, e)
+            )
             pass
         if not uncmd:
             uncmd = cmd
             self.lang = 'en'
-        log.debug("UnTranslation %s to: %s (DETECTED lang: %s)." % (cmd, uncmd, self.lang))
+        log.debug(
+            "UnTranslation %s to: %s (DETECTED lang: %s)." % (cmd, uncmd, self.lang)
+        )
         return uncmd
 
     def trans(self, string, module=None):
-        """ Translate string to language for module """
+        """Translate string to language for module."""
         if not module:
             module = self.name
         # try translate string
-        log.debug("Translation: |%s|. To lang: %s for module %s" % (string, self.lang, module))
+        log.debug(
+            "Translation: |%s|. To lang: %s for module %s" % (string, self.lang, module)
+        )
         res = string
         try:
-            trans = gettext.translation(module, os.path.join(self.config.rootf,"locale"), languages=[self.lang,'en'])
+            trans = gettext.translation(
+                module,
+                os.path.join(self.config.rootf, "locale"),
+                languages=[self.lang, 'en']
+            )
             trans.install()
             res = trans.ugettext(string)
         except IOError as e:
-            log.warn("Translation for module %s non present in %s." % (module, os.path.join(self.config.rootf,"locale")))
+            log.warn(
+                "Translation for module %s non present in %s."
+                % (module, os.path.join(self.config.rootf, "locale"))
+            )
         except Exception as e:
-            log.error("Translation: %s. For module: %s Exception: %r" % (string, module, e))
+            log.error(
+                "Translation: %s. For module: %s Exception: %r" % (string, module, e)
+            )
             pass
         log.debug("Translation %s to: %s (lang: %s)." % (string, res, self.lang))
         return res
-

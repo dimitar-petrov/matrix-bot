@@ -47,13 +47,15 @@ def load_config(loc):
 
 
 def configure_logging(logfile):
-    # not need timestamp for stdin
+    # Not need timestamp for stdin - systemd adds it
     log_format = "%(levelname)s: %(message)s"
     logging.basicConfig(
         level=logging.DEBUG,
         format=log_format
     )
+    # Do not print requests DEBUG output
     logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.ERROR)
+    # Once warn if we do not verify server ssl cert
     warnings.simplefilter("once")
 
     if logfile:

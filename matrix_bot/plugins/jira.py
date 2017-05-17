@@ -13,11 +13,11 @@ class JiraPlugin(Plugin):
     """ Plugin for interacting with JIRA.
     jira version : Display version information for this platform.
     jira track <project> <project2> ... : Track multiple projects
-    jira expand <project> <project2> ... : Expand issue IDs for the given projects with issue information.
+    jira expand <project> <project2> ... : Expand issue IDs for the given projects.
     jira stop track|tracking : Stops tracking for all projects.
     jira stop expand|expansion|expanding : Stop expanding jira issues.
     jira show track|tracking : Show which projects are being tracked.
-    jira show expansion|expand|expanding : Show which project keys will result in issue expansion.
+    jira show expansion|expand|expanding : Which project keys will result in issue expansion.
     jira create <project> <priority> <title> <desc> : Create a new JIRA issue.
     jira comment <issue-id> <comment> : Comment on a JIRA issue.
     """
@@ -86,11 +86,16 @@ class JiraPlugin(Plugin):
         self._send_state(JiraPlugin.TYPE_TRACK, event["room_id"], args)
 
         url = self.store.get("url")
-        return "Issues for projects %s from %s will be displayed as they are updated." % (args, url)
+        return(
+            "Issues for projects %s from %s will be displayed as they are updated."
+            % (args, url)
+        )
 
     @admin_only
     def cmd_expand(self, event, *args):
-        """Expand issues when mentioned for the given project keys. 'jira expand FOO BAR'"""
+        """Expand issues when mentioned
+        for the given project keys.
+        'jira expand FOO BAR'"""
         if not args:
             return self._get_expanding(event["room_id"])
 
@@ -102,14 +107,17 @@ class JiraPlugin(Plugin):
         self._send_state(JiraPlugin.TYPE_EXPAND, event["room_id"], args)
 
         url = self.store.get("url")
-        return "Issues for projects %s from %s will be expanded as they are mentioned." % (args, url)
+        return(
+            "Issues for projects %s from %s will be expanded as they are mentioned."
+            % (args, url)
+        )
 
     @admin_only
     def cmd_create(self, event, *args):
-        """Create a new issue. Format: 'create <project> <priority(optional;default 3)> <title> <desc(optional)>'
+        """Create a new issue.
+        Format: 'create <project> <priority(optional;default 3)> <title> <desc(optional)>'
         E.g. 'create syn p1 This is the title without quote marks'
-        'create syn p1 "Title here" "desc here"
-        """
+        'create syn p1 "Title here" "desc here". """
         if not args or len(args) < 2:
             return self.cmd_create.__doc__
         project = args[0]
@@ -159,9 +167,9 @@ class JiraPlugin(Plugin):
         url = self._url("/rest/api/2/serverInfo")
         response = json.loads(requests.get(url).text)
 
-        info = "%s : version %s : build %s" % (response["serverTitle"],
-               response["version"], response["buildNumber"])
-
+        info = "%s : version %s : build %s" % (
+            response["serverTitle"], response["version"], response["buildNumber"]
+        )
         return info
 
     def cmd_show(self, event, action):
@@ -177,7 +185,8 @@ class JiraPlugin(Plugin):
 
     def _get_tracking(self, room_id):
         try:
-            return ("Currently tracking %s" %
+            return (
+                "Currently tracking %s" %
                 json.dumps(
                     self.rooms.get_content(
                         room_id,
@@ -190,7 +199,8 @@ class JiraPlugin(Plugin):
 
     def _get_expanding(self, room_id):
         try:
-            return ("Currently expanding %s" %
+            return (
+                "Currently expanding %s" %
                 json.dumps(
                     self.rooms.get_content(
                         room_id,
@@ -247,8 +257,9 @@ class JiraPlugin(Plugin):
 
         # form the message
         link = self._linkify(info["key"])
-        push_message = "%s %s <b>%s</b> - %s %s" % (info["user"], info["action"],
-                       info["key"], info["summary"], link)
+        push_message = "%s %s <b>%s</b> - %s %s" % (
+            info["user"], info["action"], info["key"], info["summary"], link
+        )
 
         # send messages to all rooms registered with this project.
         for room_id in self.rooms.get_room_ids():
@@ -283,8 +294,9 @@ class JiraPlugin(Plugin):
         if response["fields"]["assignee"]:
             assignee = response["fields"]["assignee"]["displayName"]
 
-        info = "%s : %s [%s,%s,reporter=%s,assignee=%s]" % (link, desc, status,
-               priority, reporter, assignee)
+        info = "%s : %s [%s,%s,reporter=%s,assignee=%s]" % (
+            link, desc, status, priority, reporter, assignee
+        )
         return info
 
     def _create_issue(self, user_id, project, priority, title, desc=""):
@@ -388,9 +400,9 @@ class JiraPlugin(Plugin):
         status = j['issue']['fields']['status']['name']
 
         if "resolution" in j['issue']['fields'] \
-            and j['issue']['fields']['resolution'] is not None:
-            status = "%s (%s)" \
-                % (status, j['issue']['fields']['resolution']['name'])
+                and j['issue']['fields']['resolution'] is not None:
+            status = "%s (%s)" % \
+                (status, j['issue']['fields']['resolution']['name'])
 
         return "%s [%s, %s]" \
             % (summary, priority, status)

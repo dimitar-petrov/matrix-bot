@@ -1,7 +1,6 @@
 from matrix_bot.mbot.plugins import Plugin
 
 import base64
-import logging as log
 
 
 class Base64Plugin(Plugin):

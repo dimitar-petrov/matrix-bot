@@ -9,7 +9,6 @@ import json
 import logging as log
 import pprint
 from matrix_bot.mbot.tools import locale
-import os
 
 
 class Engine(object):
@@ -51,8 +50,9 @@ class Engine(object):
 
     def _help(self):
         return (
-            self.tr.trans("Installed plugins: %s - Type '%shelp <plugin_name>' for more.") %
-            (self.plugins.keys(), Engine.PREFIX)
+            self.tr.trans(
+                "Installed plugins: %s - Type '%shelp <plugin_name>' for more."
+            ) % (self.plugins.keys(), Engine.PREFIX)
         )
 
     def add_plugin(self, plugin):
@@ -134,7 +134,7 @@ class Engine(object):
                     try:
                         responses = plugin.run(
                             event,
-                            #unicode(" ".join(body.split()[1:]).encode("utf8"))
+                            # unicode(" ".join(body.split()[1:]).encode("utf8"))
                             ' '.join(body.split()[1:])
                         )
                     except CommandNotFoundError as e:
@@ -315,4 +315,3 @@ class KeyValueStore(object):
 
     def get(self, key):
         return self.config[key]
-
