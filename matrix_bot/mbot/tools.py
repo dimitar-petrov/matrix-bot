@@ -15,7 +15,7 @@
 # limitations under the License.
 import gettext
 import os
-from langdetect import detect
+import langdetect
 import logging as log
 
 
@@ -27,10 +27,49 @@ class locale(object):
         self.lang = 'en'
         # "matrix_bot.plugins."+self.name
         self.name = name
+        self.lang_factory = langdetect.DetectorFactory()
+        self.translations_root = os.path.join(self.config.rootf, "locale")
+        # available translations
+        self.langs = [
+            name for name in os.listdir(
+                self.translations_root
+            ) if os.path.isdir(os.path.join(self.translations_root, name))
+        ]
+        self.lang_factory.load_profile(self._copy_lang([u'ru', u'en']))
+
+    def _copy_lang(self, langs):
+        """ Copy only nesesary language profiles.
+        Returns new path."""
+        import shutil
+        for lang in langs:
+            dstdir = os.path.join(os.getcwd(), 'lang_prof', self.name)
+            try:
+                os.makedirs(dstdir)
+                # os.makedirs(self.name)
+            except OSError as ose:
+                # if not elready exists
+                if not ose[0] == 17:
+                    log.exception("Create dir for landuage profiles %r" % ose)
+                pass
+            except Exception as e:
+                log.exception("Create dir for landuage profiles %r" % e)
+                pass
+            srcfile = os.path.join(langdetect.PROFILES_DIRECTORY, lang)
+            try:
+                shutil.copy(srcfile, dstdir)
+            except Exception as e:
+                log.exception("Copy landuage %s profile %r" % (lang, e))
+                pass
+        return dstdir
+
+    def _detect(self, text):
+        detector = self.lang_factory.create()
+        detector.append(text)
+        return detector.detect()
 
     def detect_lang(self, string):
         """ Detect string lang """
-        self.lang = detect(string)
+        self.lang = self._detect(string)
         log.debug("Detected lang: %s for string: %s." % (self.lang, string))
 
     def _find_key(self, input_dict, value):
@@ -46,7 +85,7 @@ class locale(object):
         try:
             trans = gettext.translation(
                 module,
-                os.path.join(self.config.rootf, "locale"),
+                self.translations_root,
                 languages=[self.lang, 'en']
             )
             trans.install()
@@ -54,7 +93,7 @@ class locale(object):
         except IOError as e:
             log.warn(
                 "Translation for module %s non present in %s."
-                % (module, os.path.join(self.config.rootf, "locale"))
+                % (module, self.translations_root)
             )
         except Exception as e:
             log.error(
@@ -81,7 +120,7 @@ class locale(object):
         try:
             trans = gettext.translation(
                 module,
-                os.path.join(self.config.rootf, "locale"),
+                self.translations_root,
                 languages=[self.lang, 'en']
             )
             trans.install()
@@ -89,7 +128,7 @@ class locale(object):
         except IOError as e:
             log.warn(
                 "Translation for module %s non present in %s."
-                % (module, os.path.join(self.config.rootf, "locale"))
+                % (module, self.translations_root)
             )
         except Exception as e:
             log.error(
