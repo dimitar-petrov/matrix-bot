@@ -9,7 +9,7 @@ def read(fname):
 
 setup(
     name="matrix-bot",
-    version="0.0.5",
+    version="0.0.6",
     description="A bot for Matrix",
     long_description=read('README.md'),
     author=["Kegan Dougal", "Pavel Kardash"],
