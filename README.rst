@@ -94,3 +94,8 @@ URL
 B64
 ---
  - Provides base64 encoding/decoding.
+
+Template
+--------
+ - A plug-in template that describes the main features
+ - Start developing your plug-in from it
