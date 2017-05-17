@@ -24,13 +24,11 @@ log = logging.getLogger(name=__name__)
 
 
 class CalcPlugin(Plugin):
-    """
-        Try to Calculate expression.
-        Enter a mathematical expression
-        and complete it with a = sign.
-        If the expression can be computed,
-        you will see the result.
-    """
+    """Try to Calculate expression.
+    Enter a mathematical expression
+    and complete it with a = sign.
+    If the expression can be computed,
+    you will see the result."""
 
     name = "calc"
     integers_re = re.compile(r'\b[\d\.]+\b')

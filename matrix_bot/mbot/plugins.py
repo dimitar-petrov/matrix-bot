@@ -12,7 +12,7 @@ from functools import wraps
 import inspect
 import json
 import os
-from matrix_bot.mbot.tools import i18n
+from matrix_bot.mbot.tools import locale
 
 import logging as log
 
@@ -39,7 +39,7 @@ class PluginInterface(object):
         self.matrix = matrix_api
         self.config = config
         self.webhook = web_hook_server
-        self.tr = i18n(config, "matrix_bot.plugins."+self.name)
+        self.tr = locale(config, "matrix_bot.plugins."+self.name)
 
     def run(self, event, arg_str):
         """Run the requested command.

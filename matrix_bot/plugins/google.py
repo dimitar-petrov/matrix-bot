@@ -25,8 +25,7 @@ log = logging.getLogger(name=__name__)
 class GooglePlugin(Plugin):
     """Google search.
     (Default) google search <text to search>
-    google image <text to search>
-    """
+    google image <text to search>"""
 
     name = "google"
     default_method = "cmd_search"
@@ -71,7 +70,7 @@ class GooglePlugin(Plugin):
         if "items" in r.json():
             return r.json()["items"][0]["link"]
         else:
-            return "Nothing found..."
+            return self.tr.trans("Nothing found...")
 
     def cmd_image(self, event, *args):
         """Google search image. 'google image <text>'"""
@@ -103,6 +102,6 @@ class GooglePlugin(Plugin):
                 return None
             else:
                 log.error("Image upload error: %r" % ires)
-                return "Image upload error"
+                return self.tr.trans("Image upload error")
         else:
-            return "Nothing found..."
+            return self.tr.trans("Nothing found...")

@@ -8,7 +8,7 @@ from matrix_bot.mbot.webhook import NebHookServer
 import json
 import logging as log
 import pprint
-from matrix_bot.mbot.tools import i18n
+from matrix_bot.mbot.tools import locale
 import os
 
 
@@ -22,7 +22,7 @@ class Engine(object):
         self.config = config
         self.matrix = matrix_api
         self.sync_token = None  # set later by initial sync
-        self.tr = i18n(config, __name__)
+        self.tr = locale(config, __name__)
 
     def setup(self):
         self.webhook = NebHookServer(8500)

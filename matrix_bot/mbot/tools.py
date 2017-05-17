@@ -18,7 +18,7 @@ import os
 from langdetect import detect
 import logging as log
 
-class i18n(object):
+class locale(object):
     """ Translator tool class """
 
     def __init__(self, config, name='mistake'):

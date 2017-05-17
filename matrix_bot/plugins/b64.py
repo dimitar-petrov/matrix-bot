@@ -7,8 +7,7 @@ import logging as log
 class Base64Plugin(Plugin):
     """Encode or decode base64.
     b64 encode <text> : Encode <text> as base64.
-    b64 decode <b64> : Decode <b64> and return text.
-    """
+    b64 decode <b64> : Decode <b64> and return text."""
 
     name = "b64"
 
