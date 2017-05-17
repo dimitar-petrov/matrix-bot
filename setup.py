@@ -21,7 +21,6 @@ setup(
         "matrix_client",
         "Flask",
         "python-dateutil",
-        "gettext",
         "langdetect"
     ],
     dependency_links=[

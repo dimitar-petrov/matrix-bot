@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from matrix_bot.mbot.plugins import Plugin
+from matrix_bot.mbot.plugins import Plugin, admin_only
 import logging
 # TODO you can use KeyValueStore or RoomContextStore clases
 # to store plugin data
@@ -58,15 +58,15 @@ class TemplatePlugin(Plugin):
         # self.tr.detect_lang("any user provided string")
         # detected language stored in self.tr.lang
         translated = self.tr.trans("some text")
-            # TODO you can write to log
-            log.info("Translated text %s" % translated)
+        # TODO you can write to log
+        log.info("Translated text %s" % translated)
 
         # TODO you can revert translation
         # This action redetects users language
         # and update self.tr.lang
         source_string = self.tr.untrans(translated)
-            # TODO you can write to log
-            log.info("Revert translation result %s" % source_string)
+        # TODO you can write to log
+        log.info("Revert translation result %s" % source_string)
 
         # TODO return something
         # returned value will be posted as notice
@@ -97,8 +97,8 @@ class TemplatePlugin(Plugin):
             create it from matrix API call
             self.matrix.send_message"""
 
-            # TODO you can check if message consist resort to bot
-            if is_mentioned(body):
-                # TODO you can write to log
-                log.info("I was approached %s" % is_mentioned(body))
+        # TODO you can check if message consist resort to bot
+        if is_mentioned(body):
+            # TODO you can write to log
+            log.info("I was approached %s" % is_mentioned(body))
         pass
