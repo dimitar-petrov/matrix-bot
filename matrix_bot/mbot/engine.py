@@ -171,7 +171,7 @@ class Engine(object):
                 for p in self.plugins:
                     responses = self.plugins[p].on_msg(event, body)
                     if responses:
-                        log.debug("[Plugin-%s] Response => %s", body, responses)
+                        log.debug("[Plugin-%s] Response => %s", p, responses)
                         self.plugin_reply(room, responses)
             except Exception as e:
                 log.exception(e)
