@@ -75,8 +75,8 @@ class PluginInterface(object):
         """Received an m.room.message event."""
         pass
 
-    def on_mention(self, event, body):
-        """Bot mentioned by display name. In body line after display name"""
+    def is_mentioned(self, body):
+        """Return mentioned text if Bot mentioned by display name or False"""
         pass
 
     def get_webhook_key(self):
@@ -178,3 +178,11 @@ class Plugin(PluginInterface):
                 raise CommandNotFoundError(self.tr.trans(method.__doc__))
 
         raise CommandNotFoundError(self.tr.trans("Unknown command"))
+
+    def is_mentioned(self, body):
+        mention = body.find(self.config.login+":")+1
+        if mention:
+            return body[mention-1:]
+        else:
+            return False
+

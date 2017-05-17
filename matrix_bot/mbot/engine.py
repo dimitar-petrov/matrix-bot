@@ -102,7 +102,6 @@ class Engine(object):
                 event["content"]["msgtype"] == "m.notice"):
             return
         room = event["room_id"]  # room_id added by us
-        mention = body.find(self.config.login+":")+1
         if body.startswith(Engine.PREFIX):
             # command in line
             try:
@@ -163,35 +162,6 @@ class Engine(object):
                     "Fatal error when processing command.",
                     msgtype="m.notice"
                 )
-
-        elif mention:
-            try:
-                for p in self.plugins:
-                    responses = self.plugins[p].on_mention(event, body[mention-1:])
-                    if responses:
-                        log.debug("[Plugin-%s] Response => %s", body[mention-1:], responses)
-                        self.plugin_reply(room, responses)
-            except Exception as e:
-                log.exception(e)
-
-            """
-                appealdn = body.find(self.config.login+": ")+1
-            # appeal to bot by display name
-            com = body[appealdn+len(self.config.login)+1:]
-            lang = detect(com)
-            log.debug("{{Name}}: %s" % __name__)
-            log.debug("{{locale path}}: %s" % os.path.join(self.config.rootf,"locale"))
-            trans = gettext.translation(__name__, os.path.join(self.config.rootf,"locale"), languages=[lang,'en'])
-            _ = trans.ugettext
-            trans.install()
-            log.debug("{{Translate}}: %s" % _(com.split()[0]))
-            log.debug("{{Trans obj}}: %r" % trans._catalog)
-            log.debug("{{Trans obj dir}}: %r" % dir(trans._catalog))
-            untrans = self._find_key(trans._catalog, _(com.split()[0]))
-            string = body[appealdn+len(self.config.login)+1:]
-            string = detect(string)+" "+ untrans
-            self.matrix.send_message(room, string, msgtype="m.notice")
-            """
         else:
             # on_msg() process for loaded plugins
             try:
