@@ -11,7 +11,7 @@ setup(
     name="matrix-bot",
     version="0.0.6",
     description="A bot for Matrix",
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     author=["Kegan Dougal", "Pavel Kardash"],
     author_email=["kegsay@gmail.com", "slipeer@gmail.com"],
     url="https://github.com/Slipeer/Matrix-NEB",
