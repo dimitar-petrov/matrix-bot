@@ -26,8 +26,8 @@ msgstr ""
 msgid "Unknown command"
 msgstr "Неизвестная команда"
 
-msgid "Google search.\n    (Default) google search <text to search>\n    google image <text to search>"
-msgstr "Поиск в Google.\n    (По-умолчанию) google поиск <текст для поиска>\n    google картинка <текст для поиска>"
+msgid "Google search.\n    (Default) google search <text to search>\n    google image <text to search>\n    google next"
+msgstr "Поиск в Google.\n    (По-умолчанию) google поиск <текст для поиска>\n    google картинка <текст для поиска>\n    google дальше"
 
 msgid "search"
 msgstr "поиск"
@@ -35,7 +35,13 @@ msgstr "поиск"
 msgid "image"
 msgstr "картинка"
 
-msgid "Image upload error"
+msgid "next"
+msgstr "дальше"
+
+msgid "more"
+msgstr "ещё"
+
+msgid "Image upload error."
 msgstr "Ошибка загрузки изображения"
 
 msgid "Google search image. 'google image <text>"
@@ -44,5 +50,11 @@ msgstr "Поиск в Google картинки. 'google картинка <тек�
 msgid "Google search (default method). 'google search <text>'"
 msgstr "Поиск в Google (команда по-умолчанию). 'google поиск <текст для поиска>'"
 
+msgid "Search next. 'google more'"
+msgstr "Следующий результат поиска. 'google дальше'"
+
 msgid "Nothing found..."
 msgstr "Ничего не найдено..."
+
+msgid "No pervous search in this room."
+msgstr "В комнате нет начатого поиска."

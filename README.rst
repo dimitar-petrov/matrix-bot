@@ -57,8 +57,9 @@ Bot stores plugins related data in working directory.
 Google
 ------
 
- - Provides ability to googling 
+ - Provides ability to googling
  - Provides ability to googling images
+ - Special command for show next search result
 
 Github
 ------

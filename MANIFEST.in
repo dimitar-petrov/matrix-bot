@@ -1,2 +1,2 @@
-recursive-include locale *.mo README
+recursive-include locale *.mo *.pot README
 include *.rst
