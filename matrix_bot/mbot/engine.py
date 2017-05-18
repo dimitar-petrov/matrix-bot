@@ -9,11 +9,17 @@ import json
 import logging as log
 import pprint
 from matrix_bot.mbot.tools import locale
+import time
 
 
 class Engine(object):
     """Orchestrates plugins and the matrix API/endpoints."""
+    # Command prefix symbol
     PREFIX = "!"
+    # Sync timeout in seconds! for matrix API
+    SYNC_TIMEOUT=60
+    # Pause in sync cycle in seconds
+    SYNC_CYCLE_WAIT=1
 
     def __init__(self, matrix_api, config):
         self.plugin_cls = {}
@@ -37,7 +43,7 @@ class Engine(object):
                 self.webhook
             )
 
-        sync = self.matrix.sync(timeout_ms=30000, since=self.sync_token)
+        sync = self.matrix.sync(timeout_ms=Engine.SYNC_TIMEOUT, since=self.sync_token)
         self.parse_sync(sync, initial_sync=True)
         log.debug("Notifying plugins of initial sync results")
         for plugin_name in self.plugins:
@@ -196,12 +202,16 @@ class Engine(object):
     def event_loop(self):
         while True:
             try:
-                j = self.matrix.sync(timeout_ms=30000, since=self.sync_token)
+                # Danger!!! requests timeout is in seconds:
+                # http://docs.python-requests.org/en/master/user/quickstart/#timeouts
+                j = self.matrix.sync(timeout_ms=Engine.SYNC_TIMEOUT, since=self.sync_token)
             except MatrixError as ex:
                 log.exception("Matrix Error %r" % ex)
             except Exception as e:
                 log.error("Error when matrix sync %r" % e)
             self.parse_sync(j)
+            # Some wait
+            time.sleep(Engine.SYNC_CYCLE_WAIT)
 
     def parse_sync(self, sync_result, initial_sync=False):
         self.sync_token = sync_result["next_batch"]  # for when we start syncing
