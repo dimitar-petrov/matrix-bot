@@ -31,7 +31,11 @@ or simple place ready config files for plugins to ``/var/lib/matrix-bot`` and ma
     chown -R matrix-bot /etc/matrix-bot
     chown matrix-bot /var/log/matrix-bot.log
 
- 7. Copy systemd unit from contrib/systemd and use it:
+ 7. If you need locale template autogeneration, then give matrix-bot user write access to locale folder:
+
+    chown -R matrix-bot <matrix-bot installation dir>/locale
+
+ 8. Copy systemd unit from contrib/systemd and use it:
 
     systemctl daemon-reload
     systemctl enable matrix-bot

@@ -16,6 +16,7 @@ import gettext
 import os
 import langdetect
 import logging as log
+import polib
 
 
 class locale(object):
@@ -35,6 +36,7 @@ class locale(object):
             ) if os.path.isdir(os.path.join(self.translations_root, name))
         ]
         self.lang_factory.load_profile(self._copy_lang([u'ru', u'en']))
+        self.can_create_pot = True
 
     def _copy_lang(self, langs):
         """ Copy only nesesary language profiles.
@@ -66,6 +68,103 @@ class locale(object):
         detector.append(text)
         return detector.detect()
 
+    def _no_mo(self, module):
+        """Mo file not found"""
+        mo_path = os.path.join(
+            self.translations_root, self.lang, 'LC_MESSAGES', module+'.mo'
+        )
+        if not os.path.isfile(mo_path):
+            self._gen_mo(module)
+        else:
+            # Something strange: file exists but IOError
+            pass
+
+    def _gen_mo(self, module):
+        """Mo file create"""
+        pot_path = os.path.join(
+            self.translations_root, self.lang, 'LC_MESSAGES', module+'.pot'
+        )
+        mo_path = os.path.join(
+            self.translations_root, self.lang, 'LC_MESSAGES', module+'.mo'
+        )
+        if not os.path.isfile(os.path.join(pot_path)):
+            # need create pot
+            self._gen_pot(module)
+
+        if os.path.isfile(os.path.join(pot_path)):
+            # pot exists try to convert
+            try:
+                pot = polib.pofile(pot_path, encoding='utf-8')
+                pot.save_as_mofile(mo_path)
+            except Exception as e:
+                log.error(
+                    "Mo generation for lang: %s. For module: %s Exception: %r"
+                    % (self.lang, module, e)
+                )
+
+    def _gen_pot(self, module):
+        """Pot file create"""
+        pot_path = os.path.join(
+            self.translations_root, self.lang, 'LC_MESSAGES', module+'.pot'
+        )
+        mo_path = os.path.join(
+            self.translations_root, self.lang, 'LC_MESSAGES', module+'.mo'
+        )
+        pot = polib.POFile()
+        pot.metadata = {
+            'Project-Id-Version': '1.0',
+            'Report-Msgid-Bugs-To': 'matrix-bot@example.com',
+            'POT-Creation-Date': '2007-10-18 14:00+0100',
+            'PO-Revision-Date': '2007-10-18 14:00+0100',
+            'Last-Translator': 'matrix-bot <matrix-bot@example.com>',
+            'Language-Team': 'English <yourteam@example.com>',
+            'MIME-Version': '1.0',
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Content-Transfer-Encoding': '8bit',
+         }
+        try:
+            pot.save(pot_path)
+        except IOError as er:
+            log.error("Cant save pot file: %r", er)
+            self.can_create_pot = False
+            pass
+
+        if os.path.isfile(os.path.join(pot_path)):
+            # pot exists try to convert
+            try:
+                po = polib.pofile(pot_path, encoding='utf-8')
+                po.save_as_mofile(mo_path)
+            except Exception as e:
+                log.error(
+                    "Mo generation for lang: %s. For module: %s Exception: %r"
+                    % (self.lang, module, e)
+                )
+
+    def _pot_append(self, module, string):
+        """Add untranslated string to pot if not exists"""
+        pot_path = os.path.join(
+            self.translations_root, self.lang, 'LC_MESSAGES', module+'.pot'
+        )
+        if not os.path.isfile(os.path.join(pot_path)):
+            # need create pot
+            self._gen_pot(module)
+
+        pot = polib.pofile(pot_path, check_for_duplicates=True)
+        log.debug("{POT}: %s Keys: %r" % (pot_path, [e.msgid for e in pot]))
+        if string not in [e.msgid for e in pot]:
+            entry = polib.POEntry(
+                msgid=string,
+                msgstr=u''
+            )
+            pot.append(entry)
+            try:
+                pot.save(pot_path)
+            except IOError as er:
+                log.error("Cant save pot file: %r", er)
+                self.can_create_pot = False
+                pass
+        self._gen_mo(module)
+
     def detect_lang(self, string):
         """ Detect string lang """
         self.lang = self._detect(string)
@@ -90,6 +189,8 @@ class locale(object):
             trans.install()
             uncmd = self._find_key(trans._catalog, trans.ugettext(cmd))
         except IOError as e:
+            if self.can_create_pot:
+                self._no_mo(module)
             log.warn(
                 "Translation for module %s non present in %s."
                 % (module, self.translations_root)
@@ -125,6 +226,9 @@ class locale(object):
             trans.install()
             res = trans.ugettext(string)
         except IOError as e:
+            # Autocteare translation template if can
+            if self.can_create_pot:
+                self._no_mo(module)
             log.warn(
                 "Translation for module %s non present in %s."
                 % (module, self.translations_root)
@@ -134,5 +238,9 @@ class locale(object):
                 "Translation: %s. For module: %s Exception: %r" % (string, module, e)
             )
             pass
+
+        # try to add stringto translation if can
+        if self.can_create_pot:
+            self._pot_append(module, string)
         log.debug("Translation %s to: %s (lang: %s)." % (string, res, self.lang))
         return res
