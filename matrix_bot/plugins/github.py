@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
 from matrix_bot.mbot.plugins import Plugin, admin_only
 
 from hashlib import sha1
@@ -38,7 +38,7 @@ class GithubPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         super(GithubPlugin, self).__init__(*args, **kwargs)
-        self.store = KeyValueStore("github.json")
+        self.store = KeyValueStore(self.name)
         self.rooms = RoomContextStore(
             [GithubPlugin.TYPE_TRACK]
         )

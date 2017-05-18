@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from matrix_bot.mbot.plugins import Plugin, admin_only
-from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
 
 import json
 import urlparse
@@ -36,7 +36,7 @@ class JenkinsPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         super(JenkinsPlugin, self).__init__(*args, **kwargs)
-        self.store = KeyValueStore("jenkins.json")
+        self.store = KeyValueStore(self.name)
         self.rooms = RoomContextStore(
             [JenkinsPlugin.TYPE_TRACK]
         )

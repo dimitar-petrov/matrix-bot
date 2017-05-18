@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from matrix_bot.mbot.plugins import Plugin
-from matrix_bot.mbot.engine import KeyValueStore
+from matrix_bot.mbot.store import KeyValueStore
 import requests
 import logging
 
@@ -31,7 +31,7 @@ class GooglePlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         super(GooglePlugin, self).__init__(*args, **kwargs)
-        self.store = KeyValueStore("google.json")
+        self.store = KeyValueStore(self.name)
 
         if not self.store.has("apiurl"):
             self.store.set(

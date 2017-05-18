@@ -1,4 +1,4 @@
-from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
 from matrix_bot.mbot.plugins import Plugin, admin_only
 
 import getpass
@@ -37,7 +37,7 @@ class JiraPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         super(JiraPlugin, self).__init__(*args, **kwargs)
-        self.store = KeyValueStore("jira.json")
+        self.store = KeyValueStore(self.name)
         self.rooms = RoomContextStore(
             [JiraPlugin.TYPE_TRACK, JiraPlugin.TYPE_EXPAND]
         )

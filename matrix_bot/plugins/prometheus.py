@@ -2,7 +2,7 @@
 from jinja2 import Template
 import json
 from matrix_client.api import MatrixRequestError
-from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
 from matrix_bot.mbot.plugins import Plugin, admin_only
 from Queue import PriorityQueue
 from threading import Thread
@@ -23,7 +23,7 @@ class PrometheusPlugin(Plugin):
 
     def __init__(self, *args, **kwargs):
         super(PrometheusPlugin, self).__init__(*args, **kwargs)
-        self.store = KeyValueStore("prometheus.json")
+        self.store = KeyValueStore(self.name)
         self.rooms = RoomContextStore(
             [PrometheusPlugin.TYPE_TRACK]
         )

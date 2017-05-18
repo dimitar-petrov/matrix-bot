@@ -18,7 +18,7 @@ from matrix_bot.mbot.plugins import Plugin, admin_only
 import logging
 # TODO you can use KeyValueStore or RoomContextStore clases
 # to store plugin data
-from matrix_bot.mbot.engine import KeyValueStore, RoomContextStore
+from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
 
 # TODO Please save yor name for history
 __author__ = 'Author <Author@email>'
