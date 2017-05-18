@@ -1,3 +1,0 @@
-{
-    "message_template": "[ALERT] {{labels.alertname}} : {{summary}}\n{{payload.generatorURL}}\n{{description}}\nValue: {{payload.value}}\n{{payload.alertingRule}}\nActive since: {{payload.activeSince}}"
-}
