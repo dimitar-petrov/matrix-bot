@@ -28,9 +28,10 @@ class GuessNumberPlugin(Plugin):
         }
         self.games[usr] = game_state
         return (
-            "Created a new game."
-            "Guess what the chosen number is between 0-%s. You have %s attempts." %
-            (GuessNumberPlugin.MAX_NUM, GuessNumberPlugin.ATTEMPTS)
+            self.tr.trans(
+                "Created a new game."
+                "Guess what the chosen number is between 0-%s. You have %s attempts."
+            ) % (GuessNumberPlugin.MAX_NUM, GuessNumberPlugin.ATTEMPTS)
         )
 
     def cmd_guess(self, event, num):
@@ -38,26 +39,27 @@ class GuessNumberPlugin(Plugin):
         usr = event["sender"]
 
         if usr not in self.games:
-            return "You need to start a game first."
+            return self.tr.trans("You need to start a game first.")
 
         int_num = -1
         try:
             int_num = int(num)
         except:
-            return "That isn't a number."
+            return self.tr.trans("That isn't a number.")
 
         target_num = self.games[usr]["num"]
         if int_num == target_num:
             self.games.pop(usr)
-            return "You win!"
+            return self.tr.trans("You win!")
 
         game_over = self._add_attempt(usr)
 
         if game_over:
             return game_over
         else:
-            sign = "greater" if (target_num > int_num) else "less"
-            return "Nope. The number is %s than that." % sign
+            sign = self.tr.trans("greater") \
+                if (target_num > int_num) else self.tr.trans("less")
+            return self.tr.trans("Nope. The number is %s than that.") % sign
 
     def cmd_hint(self, event):
         """Get a hint. 'guessnumber hint'"""
@@ -65,7 +67,7 @@ class GuessNumberPlugin(Plugin):
         usr = event["sender"]
 
         if usr not in self.games:
-            return "You need to start a game first."
+            return self.tr.trans("You need to start a game first.")
 
         num = self.games[usr]["num"]
         hint_pool = [self._odd_even, self._ends_with, self._between]
@@ -82,7 +84,9 @@ class GuessNumberPlugin(Plugin):
         self.games[usr]["attempts"] += 1
 
         if self.games[usr]["attempts"] >= GuessNumberPlugin.ATTEMPTS:
-            res = "Out of tries. The number was %s." % self.games[usr]["num"]
+            res = self.tr.trans(
+                "Out of tries. The number was %s."
+            ) % self.games[usr]["num"]
             self.games.pop(usr)
             return res
 
@@ -96,12 +100,12 @@ class GuessNumberPlugin(Plugin):
     def _ends_with(self, num):
         actual = num % 10
         if actual < 5:
-            return "The last digit is either 0, 1, 2, 3, 4."
+            return self.tr.trans("The last digit is either 0, 1, 2, 3, 4.")
         else:
-            return "The last digit is either 5, 6, 7, 8, 9."
+            return self.tr.trans("The last digit is either 5, 6, 7, 8, 9.")
 
     def _odd_even(self, num):
         if num % 2 == 0:
-            return "The number is even."
+            return self.tr.trans("The number is even.")
         else:
-            return "The number is odd."
+            return self.tr.trans("The number is odd.")
