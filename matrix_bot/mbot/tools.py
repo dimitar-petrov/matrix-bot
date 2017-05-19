@@ -17,6 +17,7 @@ import os
 import langdetect
 import logging as log
 import polib
+#import pkg_resources
 
 
 class locale(object):
@@ -28,7 +29,7 @@ class locale(object):
         # "matrix_bot.plugins."+self.name
         self.name = name
         self.lang_factory = langdetect.DetectorFactory()
-        self.translations_root = os.path.join(self.config.rootf, "locale")
+        self.translations_root = os.path.join(self.config.rootf, 'locale')
         # available translations
         self.langs = [
             name for name in os.listdir(

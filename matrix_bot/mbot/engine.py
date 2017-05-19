@@ -112,7 +112,6 @@ class Engine(object):
             # command in line
             try:
                 segments = body.split()
-                log.debug("{COMMAND}: %s len: %d" % ('|'.join(segments), len(segments)))
                 cmd = segments[0][1:]
                 if self.config.case_insensitive:
                     cmd = cmd.lower()
@@ -126,7 +125,6 @@ class Engine(object):
                         opt1 = self.tr.untrans(segments[1])
                         if opt1 in self.plugins:
                             # return help on a plugin
-                            log.debug("Name: %s Doc: %s" % (self.plugins[opt1].name, self.tr.trans(self.plugins[opt1].__doc__, "matrix_bot.plugins."+self.plugins[opt1].name)))
                             self.matrix.send_message(
                                 room,
                                 self.tr.trans(
@@ -147,8 +145,6 @@ class Engine(object):
                             # unicode(" ".join(body.split()[1:]).encode("utf8"))
                             ' '.join(body.split()[1:])
                         )
-                        if responses:
-                            log.debug("[Plugin-%s] Response => %r", cmd, responses)
                     except CommandNotFoundError as e:
                         log.exception(e)
                         self.matrix.send_message(
@@ -163,6 +159,8 @@ class Engine(object):
                             "Problem making request: (%s) %s" % (ex.code, ex.content),
                             msgtype="m.notice"
                         )
+                    if responses:
+                        log.debug("[Plugin-%s] Response => %r", cmd, responses)
                         self.plugin_reply(room, responses)
 
             except NebError as ne:
@@ -181,7 +179,7 @@ class Engine(object):
                 for p in self.plugins:
                     responses = self.plugins[p].on_msg(event, body)
                     if responses:
-                        log.debug("[Plugin-%s] Response => %s", p, responses)
+                        log.debug("[Plugin-%s on_msg()] Response => %s", p, responses)
                         self.plugin_reply(room, responses)
             except Exception as e:
                 log.exception(e)
