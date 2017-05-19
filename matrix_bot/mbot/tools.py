@@ -15,9 +15,9 @@
 import gettext
 import os
 import langdetect
+from langdetect.lang_detect_exception import ErrorCode, LangDetectException
 import logging as log
 import polib
-#import pkg_resources
 
 
 class locale(object):
@@ -67,7 +67,12 @@ class locale(object):
     def _detect(self, text):
         detector = self.lang_factory.create()
         detector.append(text)
-        return detector.detect()
+        res = self.lang
+        try:
+            detector.detect()
+        except LangDetectException as ex:
+            pass
+        return res
 
     def _no_mo(self, module):
         """Mo file not found"""
