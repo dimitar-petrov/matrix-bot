@@ -1,4 +1,4 @@
-from matrix_bot.mbot.plugins import Plugin
+from matrix_bot.mbot.plugins import Plugin, civility
 import random
 
 
@@ -19,6 +19,7 @@ class GuessNumberPlugin(Plugin):
         super(Plugin, self).__init__(*args, **kwargs)
         self.games = {}
 
+    @civility
     def cmd_new(self, event):
         """Start a new game. 'guessnumber new'"""
         usr = event["sender"]
@@ -34,6 +35,7 @@ class GuessNumberPlugin(Plugin):
             ) % (GuessNumberPlugin.MAX_NUM, GuessNumberPlugin.ATTEMPTS)
         )
 
+    @civility
     def cmd_guess(self, event, num):
         """Make a guess. 'guessnumber guess <number>'"""
         usr = event["sender"]
@@ -61,6 +63,7 @@ class GuessNumberPlugin(Plugin):
                 if (target_num > int_num) else self.tr.trans("less")
             return self.tr.trans("Nope. The number is %s than that.") % sign
 
+    @civility
     def cmd_hint(self, event):
         """Get a hint. 'guessnumber hint'"""
         # hints give a 50% reduction, e.g. between 0-50, even/odd, ends with 12345
