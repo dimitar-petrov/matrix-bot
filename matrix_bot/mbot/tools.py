@@ -69,7 +69,7 @@ class locale(object):
         detector.append(text)
         res = self.lang
         try:
-            detector.detect()
+            res = detector.detect()
         except LangDetectException as ex:
             pass
         return res
