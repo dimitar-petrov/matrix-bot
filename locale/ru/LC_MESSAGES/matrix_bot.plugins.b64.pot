@@ -27,7 +27,7 @@ msgid "Unknown command"
 msgstr "Неизвестная команда"
 
 msgid "Encode or decode base64.\n    b64 encode <text> : Encode <text> as base64.\n    b64 decode <b64> : Decode <b64> and return text."
-msgstr "Конвертор base64\n    b64 закодировать <text> : кодирует текст в base64\n    b64 раскодировать <text> : расшифрует base64."
+msgstr "Конвертор base64\n    б64 закодировать <text> : кодирует текст в base64\n    б64 раскодировать <text> : расшифрует base64."
 
 msgid "encode"
 msgstr "закодировать"

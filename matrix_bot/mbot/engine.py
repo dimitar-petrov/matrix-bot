@@ -54,10 +54,11 @@ class Engine(object):
                 self.webhook.set_plugin(plugin.get_webhook_key(), plugin)
 
     def _help(self):
+        plugins = [self.tr.trans(name) for name in  self.plugins.keys() ]
         return (
             self.tr.trans(
                 "Installed plugins: %s - Type '%shelp <plugin_name>' for more."
-            ) % (self.plugins.keys(), Engine.PREFIX)
+            ) % (', '.join(plugins), Engine.PREFIX)
         )
 
     def add_plugin(self, plugin):
@@ -111,6 +112,7 @@ class Engine(object):
             # command in line
             try:
                 segments = body.split()
+                log.debug("{COMMAND}: %s len: %d" % ('|'.join(segments), len(segments)))
                 cmd = segments[0][1:]
                 if self.config.case_insensitive:
                     cmd = cmd.lower()
@@ -120,19 +122,22 @@ class Engine(object):
                 cmd = self.tr.untrans(cmd)
 
                 if cmd == "help":
-                    if len(segments) == 2 and segments[1] in self.plugins:
-                        # return help on a plugin
-                        self.matrix.send_message(
-                            room,
-                            self.tr.trans(
-                                self.plugins[segments[1]].__doc__,
-                                "matrix_bot.plugins."+self.plugins[segments[1]].name
-                            ),
-                            msgtype="m.notice"
-                        )
+                    if len(segments) == 2:
+                        opt1 = self.tr.untrans(segments[1])
+                        if opt1 in self.plugins:
+                            # return help on a plugin
+                            log.debug("Name: %s Doc: %s" % (self.plugins[opt1].name, self.tr.trans(self.plugins[opt1].__doc__, "matrix_bot.plugins."+self.plugins[opt1].name)))
+                            self.matrix.send_message(
+                                room,
+                                self.tr.trans(
+                                    self.plugins[opt1].__doc__,
+                                    "matrix_bot.plugins."+self.plugins[opt1].name
+                                ),
+                                msgtype="m.text"
+                            )
                     else:
                         # return generic help
-                        self.matrix.send_message(room, self._help(), msgtype="m.notice")
+                        self.matrix.send_message(room, self._help(), msgtype="m.text")
                 elif cmd in self.plugins:
                     plugin = self.plugins[cmd]
                     responses = None
@@ -142,6 +147,8 @@ class Engine(object):
                             # unicode(" ".join(body.split()[1:]).encode("utf8"))
                             ' '.join(body.split()[1:])
                         )
+                        if responses:
+                            log.debug("[Plugin-%s] Response => %r", cmd, responses)
                     except CommandNotFoundError as e:
                         log.exception(e)
                         self.matrix.send_message(
@@ -156,8 +163,6 @@ class Engine(object):
                             "Problem making request: (%s) %s" % (ex.code, ex.content),
                             msgtype="m.notice"
                         )
-                    if responses:
-                        log.debug("[Plugin-%s] Response => %r", cmd, responses)
                         self.plugin_reply(room, responses)
 
             except NebError as ne:

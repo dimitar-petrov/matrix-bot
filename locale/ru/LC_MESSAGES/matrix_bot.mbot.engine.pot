@@ -28,5 +28,23 @@ msgstr ""
 msgid "help"
 msgstr "справка"
 
+msgid "google"
+msgstr "гугл"
+
+msgid "time"
+msgstr "время"
+
+msgid "calc"
+msgstr "калькулятор"
+
+msgid "b64"
+msgstr "б64"
+
+msgid "url"
+msgstr "урл"
+
+msgid "guessnumber"
+msgstr "угадайчисло"
+
 msgid "Installed plugins: %s - Type '%shelp <plugin_name>' for more."
 msgstr "Установлены плагины: %s - Наберите '%sсправка <имя плагина>' для просмотра справки плагина."

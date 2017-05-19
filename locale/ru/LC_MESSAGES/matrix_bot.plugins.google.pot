@@ -27,7 +27,7 @@ msgid "Unknown command"
 msgstr "Неизвестная команда"
 
 msgid "Google search.\n    (Default) google search <text to search>\n    google image <text to search>\n    google next"
-msgstr "Поиск в Google.\n    (По-умолчанию) google поиск <текст для поиска>\n    google картинка <текст для поиска>\n    google дальше"
+msgstr "Поиск в Google.\n    (По-умолчанию) гугл поиск <текст для поиска>\n    гугл картинка <текст для поиска>\n    гугл дальше"
 
 msgid "search"
 msgstr "поиск"

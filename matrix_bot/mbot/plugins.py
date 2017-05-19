@@ -124,7 +124,7 @@ class Plugin(PluginInterface):
 
         self.tr.detect_lang(event["content"]["body"].strip())
         if len(args_array) == 0:
-            raise CommandNotFoundError(self.tr.trans(self.__doc__))
+            raise CommandNotFoundError(self.tr.trans(self.__doc__).encode('utf-8'))
 
         # Structure is cmd_foo_bar_baz for "!foo bar baz"
         # This starts by assuming a no-arg cmd then getting progressively
@@ -160,7 +160,7 @@ class Plugin(PluginInterface):
                         return method(event)
                 except TypeError as e:
                     log.exception(e)
-                    raise CommandNotFoundError(self.tr.trans(method.__doc__))
+                    raise CommandNotFoundError(self.tr.trans(method.__doc__).encode('utf-8'))
 
         # if defined default command
         if hasattr(self, "default_method"):
@@ -185,9 +185,9 @@ class Plugin(PluginInterface):
                     return method()
             except TypeError as e:
                 log.exception(e)
-                raise CommandNotFoundError(self.tr.trans(method.__doc__))
+                raise CommandNotFoundError(self.tr.trans(method.__doc__).encode('utf-8'))
 
-        raise CommandNotFoundError(self.tr.trans("Unknown command"))
+        raise CommandNotFoundError(self.tr.trans("Unknown command").encode('utf-8'))
 
     def is_mentioned(self, body):
         mention = body.find(self.config.login+":")+1

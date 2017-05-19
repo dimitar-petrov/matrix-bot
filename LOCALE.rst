@@ -11,3 +11,5 @@ or for all files:
     find -name '*.pot' -print | sed -e "p;s/^\(.*\).pot$/--output-file \1.mo/" | xargs -n3 msgfmt
 
 If bot can write access to locale dir, then it try autoappend unpresent msgid to locale pot file.
+
+Plugin name translation must be included to matrix_bot.mbot.engine.pot (engine module will look for it).

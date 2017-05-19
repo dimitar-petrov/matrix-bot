@@ -150,7 +150,6 @@ class locale(object):
             self._gen_pot(module)
 
         pot = polib.pofile(pot_path, check_for_duplicates=True)
-        log.debug("{POT}: %s Keys: %r" % (pot_path, [e.msgid for e in pot]))
         if string not in [e.msgid for e in pot]:
             entry = polib.POEntry(
                 msgid=string,
@@ -204,7 +203,8 @@ class locale(object):
             uncmd = cmd
             self.lang = 'en'
         log.debug(
-            "UnTranslation %s to: %s (DETECTED lang: %s)." % (cmd, uncmd, self.lang)
+            "UnTranslation %s to: %s (DETECTED lang: %s mod: %s)."
+            % (cmd, uncmd, self.lang, module)
         )
         return uncmd
 
@@ -242,5 +242,8 @@ class locale(object):
         # try to add stringto translation if can
         if self.can_create_pot:
             self._pot_append(module, string)
-        log.debug("Translation %s to: %s (lang: %s)." % (string, res, self.lang))
+        log.debug(
+            "Translation %s to: %s (lang: %s mod: %s)."
+            % (string, res, self.lang, module)
+        )
         return res
