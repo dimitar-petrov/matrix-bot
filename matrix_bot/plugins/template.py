@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from matrix_bot.mbot.plugins import Plugin, admin_only
+from matrix_bot.mbot.plugins import Plugin, admin_only, civility
 import logging
 # TODO you can use KeyValueStore or RoomContextStore clases
 # to store plugin data
@@ -27,10 +27,18 @@ log = logging.getLogger(name=__name__)
 # TODO Create language files for plugin
 # for tranclating docs look LOCALE.rst
 
+
 # TODO Rename plugin
 class TemplatePlugin(Plugin):
     # TODO describe your plugin
-    """New plugin template."""
+    """ New plugin template.
+        Usage:
+        'template first <text>'
+        'template second <text>'
+        'template third <text>'
+        'template <text>'
+        or if you write anything this plugin will receive it.
+    """
 
     # TODO plugin name for config and commands
     name = 'template'
@@ -41,9 +49,8 @@ class TemplatePlugin(Plugin):
 
     # TODO create plugin constructor
     def __init__(self, *args, **kwargs):
-        super(GooglePlugin, self).__init__(*args, **kwargs)
-        self.someopt = something
-
+        super(TemplatePlugin, self).__init__(*args, **kwargs)
+        self.someopt = ''
 
     def cmd_default(self, event, *args):
         # TODO this strings will shown as help for users
@@ -74,7 +81,7 @@ class TemplatePlugin(Plugin):
 
     # TODO use @admin_only decorator for methods accessible only to bot admins
     @admin_only
-    def cmd_seond(self, event, *args):
+    def cmd_second(self, event, *args):
         # TODO this strings will shown as help for users
         # it can (i think must) be translated
         """Template second method. 'template second <text>'"""
@@ -85,6 +92,20 @@ class TemplatePlugin(Plugin):
         # you can return any type of message using
         # self.matrix.send_message or other methods
         return None
+
+    # TODO use @civility if you need mention event sender in returned reply
+    @civility
+    def cmd_third(self, event, *args):
+        # TODO this strings will shown as help for users
+        # it can (i think must) be translated
+        """Template third method. 'template third <text>'"""
+        # TODO or you can retrive display name by this method
+        your_name = self.get_displayname(event)
+
+        # TODO return something
+        # you can return any type of message using
+        # self.matrix.send_message or other methods
+        return "your name is %s" % your_name
 
     # TODO implement method executable for every message
     def on_msg(self, event, body):
@@ -98,7 +119,7 @@ class TemplatePlugin(Plugin):
             self.matrix.send_message"""
 
         # TODO you can check if message consist resort to bot
-        if is_mentioned(body):
+        if self.is_mentioned(body):
             # TODO you can write to log
-            log.info("I was approached %s" % is_mentioned(body))
+            log.info("I was approached %s" % self.is_mentioned(body))
         pass
