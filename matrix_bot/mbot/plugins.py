@@ -28,6 +28,26 @@ def admin_only(fn):
     return wrapped
 
 
+def civility(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        matrix = args[0].matrix
+        event = args[1]
+        displayname = args[0].get_displayname(event)
+        log.debug(displayname)
+        result = fn(*args, **kwargs)
+        if type(result) == list:
+            result = [
+                ' '.join([displayname, ': ', res])
+                for res in result
+                if type(res) in [str, unicode]
+             ]
+        elif type(result) in [str, unicode]:
+            result = ' '.join([displayname, ': ', result])
+        return result
+    return wrapped
+
+
 class CommandNotFoundError(Exception):
     pass
 
@@ -90,6 +110,16 @@ class PluginInterface(object):
         """
         pass
 
+    def get_displayname(self, event):
+        """ Returns sender display name.
+
+        Args:
+            event(dict): Raw event
+        Returns:
+            displayname(str): sender display name
+        """
+        pass
+
     def get_webhook_key(self):
         """Return a string for a webhook path if a webhook is required."""
         pass
@@ -109,6 +139,13 @@ class PluginInterface(object):
 
 
 class Plugin(PluginInterface):
+
+    def get_displayname(self, event):
+        displayname = self.matrix.get_display_name(event['sender']).strip()
+        if not displayname.strip():
+            displayname = event['sender']
+        return displayname
+
 
     def run(self, event, arg_str):
 
