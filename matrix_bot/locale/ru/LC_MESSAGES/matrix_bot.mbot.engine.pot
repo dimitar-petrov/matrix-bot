@@ -43,6 +43,9 @@ msgstr "б64"
 msgid "url"
 msgstr "урл"
 
+msgid "wiki"
+msgstr "вики"
+
 msgid "guessnumber"
 msgstr "угадайчисло"
 
