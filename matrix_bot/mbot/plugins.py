@@ -160,28 +160,29 @@ class Plugin(PluginInterface):
         return displayname
 
     def send_html(self, room_id, html):
-        # https://github.com/matrix-org/synapse/blob/fad3a8433535d7de321350bbd17373138c6fd3ec/synapse/event_auth.py#L183
-        # matrix event has size limit 65536
-        content = {
-            'body': re.sub('<[^<]+?>', '', html),
-            'msgtype': 'm.text',
-            'format': 'org.matrix.custom.html',
-            'formatted_body': html
-        }
-        # - 5000 is for othwer event headers
-        need_trim = len(encode_canonical_json(dict(content))) - 65536 - 5000
-        if need_trim:
+        if html:
+            # https://github.com/matrix-org/synapse/blob/fad3a8433535d7de321350bbd17373138c6fd3ec/synapse/event_auth.py#L183
+            # matrix event has size limit 65536
             content = {
-                'body': re.sub('<[^<]+?>', '', html[:-need_trim]),
+                'body': re.sub('<[^<]+?>', '', html),
                 'msgtype': 'm.text',
                 'format': 'org.matrix.custom.html',
                 'formatted_body': html
             }
-        return self.matrix.send_message_event(
-            room_id,
-            'm.room.message',
-            content
-        )
+            # - 5000 is for othwer event headers
+            need_trim = len(encode_canonical_json(dict(content))) - 65536 - 5000
+            if need_trim:
+                content = {
+                    'body': re.sub('<[^<]+?>', '', html[:-need_trim]),
+                    'msgtype': 'm.text',
+                    'format': 'org.matrix.custom.html',
+                    'formatted_body': html
+                }
+            return self.matrix.send_message_event(
+                room_id,
+                'm.room.message',
+                content
+            )
 
     def run(self, event, arg_str):
 
