@@ -77,6 +77,7 @@ class Engine(object):
                     "Refusing invite, %s not in admin list. Event: %s",
                     user_id, event
                 )
+                self.matrix.leave_room(event["room_id"])
 
     def plugin_reply(self, room, responses):
         if type(responses) == list:
