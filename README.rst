@@ -60,49 +60,56 @@ Bot stores plugins related data in working directory.
 
 Template
 --------
- - A `plug-in template <https://github.com/slipeer/Matrix-NEB/blob/master/matrix_bot/plugins/template.py>`_ that describes the main features
- - Start developing your plug-in from it
+- A `plug-in template <https://github.com/slipeer/Matrix-NEB/blob/master/matrix_bot/plugins/template.py>`_ that describes the main features
+- Start developing your plug-in from it
 
 Google
 ------
 
- - Provides ability to googling
- - Provides ability to googling images
- - Special command for show next search result
+- Provides ability to googling
+- Provides ability to googling images
+- Special command for show next search result
+
+Wikipedia
+---------
+
+- Provides ability to search in wikipedia
+- Result returned on same language as query (language must preset in locales)
+- Result size limited, but at end provided link to page
 
 Github
 ------
 
- - Processes webhook requests and send messages to interested rooms.
- - Supports secret token HMAC authentication.
- - Supported events: ``push``, ``create``, ``ping``, ``pull_request``
+- Processes webhook requests and send messages to interested rooms.
+- Supports secret token HMAC authentication.
+- Supported events: ``push``, ``create``, ``ping``, ``pull_request``
 
 Jenkins
 -------
 
- - Sends build failure messages to interested rooms.
- - Support via the Notification plugin.
- - Supports shared secret authentication.
+- Sends build failure messages to interested rooms.
+- Support via the Notification plugin.
+- Supports shared secret authentication.
 
 JIRA
 ----
 
- - Processes webhook requests and sends messages to interested rooms.
- - Resolves JIRA issue IDs into one-line summaries as they are mentioned by other people.
+- Processes webhook requests and sends messages to interested rooms.
+- Resolves JIRA issue IDs into one-line summaries as they are mentioned by other people.
 
 
 Guess Number
 ------------
 
- - Basic guess-the-number game.
+- Basic guess-the-number game.
 
 URL
 ---
 
- - Provides URL encoding/decoding.
+- Provides URL encoding/decoding.
 
 B64
 ---
- - Provides base64 encoding/decoding.
+- Provides base64 encoding/decoding.
 
 
