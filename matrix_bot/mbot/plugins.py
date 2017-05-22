@@ -11,7 +11,9 @@
 from functools import wraps
 import inspect
 import json
+import re
 from matrix_bot.mbot.tools import locale
+from canonicaljson import encode_canonical_json
 
 import logging as log
 
@@ -120,6 +122,17 @@ class PluginInterface(object):
         """
         pass
 
+    def send_html(self, room_id, html):
+        """ Send html formatted message.
+
+        Args:
+            room_id(str): room id
+            html(str): html formatted message
+        Returns:
+            Matrix API result(json)
+        """
+        pass
+
     def get_webhook_key(self):
         """Return a string for a webhook path if a webhook is required."""
         pass
@@ -146,6 +159,29 @@ class Plugin(PluginInterface):
             displayname = event['sender']
         return displayname
 
+    def send_html(self, room_id, html):
+        # https://github.com/matrix-org/synapse/blob/fad3a8433535d7de321350bbd17373138c6fd3ec/synapse/event_auth.py#L183
+        # matrix event has size limit 65536
+        content = {
+            'body': re.sub('<[^<]+?>', '', html),
+            'msgtype': 'm.text',
+            'format': 'org.matrix.custom.html',
+            'formatted_body': html
+        }
+        # - 5000 is for othwer event headers
+        need_trim = len(encode_canonical_json(dict(content))) - 65536 - 5000
+        if need_trim:
+            content = {
+                'body': re.sub('<[^<]+?>', '', html[:-need_trim]),
+                'msgtype': 'm.text',
+                'format': 'org.matrix.custom.html',
+                'formatted_body': html
+            }
+        return self.matrix.send_message_event(
+            room_id,
+            'm.room.message',
+            content
+        )
 
     def run(self, event, arg_str):
 

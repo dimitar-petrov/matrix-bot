@@ -174,6 +174,7 @@ class locale(object):
         """ Detect string lang """
         self.lang = self._detect(string)
         log.debug("Detected lang: %s for string: %s." % (self.lang, string))
+        return self.lang
 
     def _find_key(self, input_dict, value):
         """ Returns key name from dict by value """
