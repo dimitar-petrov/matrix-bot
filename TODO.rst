@@ -1,6 +1,7 @@
 Needs fix
 =========
 - Online generating translation templates requires additional testing
+- M_TOO_LARGE error handling in send_html
 
 New bot features
 ================
