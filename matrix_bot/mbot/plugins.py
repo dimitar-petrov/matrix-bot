@@ -12,6 +12,9 @@ from functools import wraps
 import inspect
 import json
 import re
+import lxml
+from io import StringIO
+from lxml.html.clean import Cleaner
 from matrix_bot.mbot.tools import locale
 from canonicaljson import encode_canonical_json
 
@@ -161,6 +164,16 @@ class Plugin(PluginInterface):
 
     def send_html(self, room_id, html):
         if html:
+            # remove scripts
+            cleaner = Cleaner()
+            cleaner.javascript = True
+            cleaner.scripst = True
+            cleaner.comments = True
+            cleaner.page_structure = True
+            cleaner.embedded = True
+            cleaner.frames = True
+            cleaner.forms = True
+            html = lxml.html.tostring(lxml.html.parse(StringIO(html)))
             # https://github.com/matrix-org/synapse/blob/fad3a8433535d7de321350bbd17373138c6fd3ec/synapse/event_auth.py#L183
             # matrix event has size limit 65536
             content = {
@@ -169,11 +182,12 @@ class Plugin(PluginInterface):
                 'format': 'org.matrix.custom.html',
                 'formatted_body': html
             }
-            # - 5000 is for othwer event headers
-            need_trim = len(encode_canonical_json(dict(content))) - 65536 - 5000
-            if need_trim:
+            if len(html) > 65535:
+                html = html[65535:]
+            while len(encode_canonical_json(dict(content))) >= 60000:
+                html = html[:-5000]
                 content = {
-                    'body': re.sub('<[^<]+?>', '', html[:-need_trim]),
+                    'body': re.sub('<[^<]+?>', '', html),
                     'msgtype': 'm.text',
                     'format': 'org.matrix.custom.html',
                     'formatted_body': html
