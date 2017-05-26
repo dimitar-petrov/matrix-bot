@@ -12,9 +12,6 @@ from functools import wraps
 import inspect
 import json
 import re
-import lxml
-from io import StringIO
-from lxml.html.clean import Cleaner
 from matrix_bot.mbot.tools import locale
 from canonicaljson import encode_canonical_json
 
@@ -164,17 +161,6 @@ class Plugin(PluginInterface):
 
     def send_html(self, room_id, html):
         if html:
-            # remove scripts
-            cleaner = Cleaner()
-            cleaner.javascript = True
-            cleaner.scripst = True
-            cleaner.comments = True
-            cleaner.page_structure = True
-            cleaner.embedded = True
-            cleaner.frames = True
-            cleaner.forms = True
-            html = lxml.html.tostring(lxml.html.parse(StringIO(html)))
-            # https://github.com/matrix-org/synapse/blob/fad3a8433535d7de321350bbd17373138c6fd3ec/synapse/event_auth.py#L183
             # matrix event has size limit 65536
             content = {
                 'body': re.sub('<[^<]+?>', '', html),
@@ -248,7 +234,9 @@ class Plugin(PluginInterface):
                         return method(event)
                 except TypeError as e:
                     log.exception(e)
-                    raise CommandNotFoundError(self.tr.trans(method.__doc__).encode('utf-8'))
+                    raise CommandNotFoundError(
+                        self.tr.trans(method.__doc__).encode('utf-8')
+                    )
 
         # if defined default command
         if hasattr(self, "default_method"):
