@@ -61,10 +61,11 @@ class ConfigPlugin(Plugin):
         res = ["Configuration:"]
         for param in self.config.json:
             if param in ('password', 'token'):
-                res.append("%s = <removed for secutiry>" % param)
+                res.append("%s = &lt;removed for secutiry&gt;" % param)
             else:
                 res.append("%s = %s" % (param, _to_str(self.config.json[param])))
-        return res
+        self.send_html(event['room_id'], '<br>'.join(res))
+        return None
 
     @admin_only
     def cmd_rooms(self, event, *args):
@@ -73,7 +74,7 @@ class ConfigPlugin(Plugin):
         for room in self.config.rooms:
             room_name = self.matrix.get_room_name(room)
             rooms.append("%s (%s)" % (room, room_name.get('name')))
-        return "['"+"', '".join(rooms)+"']"
+        self.send_html(event['room_id'], "['"+"', '".join(rooms)+"']")
 
     @admin_only
     def cmd_leave(self, event, *args):
@@ -88,8 +89,7 @@ class ConfigPlugin(Plugin):
             for room in self.config.rooms:
                 room_name = self.matrix.get_room_name(room)
                 rooms.append("%s (%s)" % (room, room_name.get('name')))
-            return "['"+"', '".join(rooms)+"']"
-        return None
+            self.send_html(event['room_id'], "['"+"', '".join(rooms)+"']")
 
     @admin_only
     def cmd_set(self, event, *args):
@@ -109,12 +109,11 @@ class ConfigPlugin(Plugin):
                     type(self.config.json[param]), type(val)
                 )
         self.config.set(param, val)
-        return ("Setup param: `%s` to value: %s type: %s" % (param, val, type(val)))
-
+        self.send_html(event['room_id'], "Setup param: `%s` to value: `%s`" % (param, val))
 
     @admin_only
     def cmd_save(self, event, *args):
         """Save current bot configuration. Usage: 'config save'"""
         self.config.save()
-        return "Configuration saved."
+        self.send_html(event['room_id'], 'Configuration saved')
 

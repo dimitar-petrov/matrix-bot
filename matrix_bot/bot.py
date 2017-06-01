@@ -21,15 +21,13 @@ log = logging.getLogger(name=__name__)
 
 
 def generate_config(url, username, password, admin, config_loc):
-    config = MatrixConfig(
-            hs_url=url,
-            user_id=username,
-            password=password,
-            admins=[admin],
-            case_insensitive=False,
-            conf_location=config_loc
-    )
-    print(config_loc)
+    config = MatrixConfig({
+        'url': url,
+        'user_id': username,
+        'password': password,
+        'admins': admin,
+        'case_insensitive': False
+    }, config_loc)
     config.save()
     return config
 
