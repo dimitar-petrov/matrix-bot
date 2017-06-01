@@ -63,6 +63,13 @@ Template
 - A `plug-in template <https://github.com/slipeer/matrix-bot/blob/master/matrix_bot/plugins/template.py>`_ that describes the main features
 - Start developing your plug-in from it
 
+Config
+------
+
+- Allow online bot configuration management
+- Allow view bot rooms
+- Allow order bot to leave room (without the need for an administrator to join the room)
+
 Google
 ------
 
