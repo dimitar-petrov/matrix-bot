@@ -217,6 +217,11 @@ class Engine(object):
             time.sleep(Engine.SYNC_CYCLE_WAIT)
 
     def parse_sync(self, sync_result, initial_sync=False):
+
+        for room_id, left_room in sync_result["rooms"]['leave'].items():
+            if room_id in self.config.rooms:
+                del self.config.rooms[room_id]
+
         self.sync_token = sync_result["next_batch"]  # for when we start syncing
 
         # check invited rooms
@@ -233,6 +238,8 @@ class Engine(object):
         # check joined rooms
         rooms = sync_result["rooms"]["join"]
         for room_id in rooms:
+            if not self.config.rooms.get(room_id):
+                self.config.rooms[room_id]={}
             events = rooms[room_id]["timeline"]["events"]
             self.process_events(events, room_id)
 

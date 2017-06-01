@@ -13,6 +13,7 @@ class MatrixConfig(object):
     PLG = "plugins"
     SSL = "cert_verify"
     json = {}
+    rooms = {}
 
     def __init__(
         self, hs_url, user_id, password, admins,

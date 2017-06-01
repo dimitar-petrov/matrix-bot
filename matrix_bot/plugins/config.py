@@ -23,22 +23,20 @@ log = logging.getLogger(name=__name__)
 
 
 class ConfigPlugin(Plugin):
-    # TODO describe your plugin
     """ Administrate bot.
         Usage:
         'config list'
         'config save'
+        'config rooms'
+        'config leave <room_id>'
         'config set <param>=<val>'
     """
 
     name = 'config'
     hidden = True
 
-    # TODO specify default method name
-    # it will be called if no method specified
     default_method = 'cmd_list'
 
-    # TODO create plugin constructor
     def __init__(self, *args, **kwargs):
         super(ConfigPlugin, self).__init__(*args, **kwargs)
         self.someopt = ''
@@ -46,8 +44,6 @@ class ConfigPlugin(Plugin):
     def cmd_default(self, event, *args):
         """Template default method (default method). 'template default <text>'"""
         return None
-
-
 
     @admin_only
     def cmd_list(self, event, *args):
@@ -69,6 +65,31 @@ class ConfigPlugin(Plugin):
             else:
                 res.append("%s = %s" % (param, _to_str(self.config.json[param])))
         return res
+
+    @admin_only
+    def cmd_rooms(self, event, *args):
+        """Show bot rooms. Usage: 'config rooms'"""
+        rooms = []
+        for room in self.config.rooms:
+            room_name = self.matrix.get_room_name(room)
+            rooms.append("%s (%s)" % (room, room_name.get('name')))
+        return "['"+"', '".join(rooms)+"']"
+
+    @admin_only
+    def cmd_leave(self, event, *args):
+        """Leave room. Usage: 'config leave <room_id>'"""
+        if len(args) < 1:
+            room_id = event['room_id']
+        else:
+            room_id = args[0]
+        self.matrix.leave_room(room_id)
+        if not room_id == event['room_id']:
+            rooms = []
+            for room in self.config.rooms:
+                room_name = self.matrix.get_room_name(room)
+                rooms.append("%s (%s)" % (room, room_name.get('name')))
+            return "['"+"', '".join(rooms)+"']"
+        return None
 
     @admin_only
     def cmd_set(self, event, *args):
