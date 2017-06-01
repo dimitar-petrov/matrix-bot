@@ -153,6 +153,8 @@ class PluginInterface(object):
 
 class Plugin(PluginInterface):
 
+    hidden = False
+
     def get_displayname(self, event):
         displayname = self.matrix.get_display_name(event['sender']).strip()
         if not displayname.strip():

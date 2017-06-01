@@ -43,6 +43,9 @@ class TemplatePlugin(Plugin):
     # TODO plugin name for config and commands
     name = 'template'
 
+    # TODO You can hide plugin from main help
+    hidden = False
+
     # TODO specify default method name
     # it will be called if no method specified
     default_method = 'cmd_default'

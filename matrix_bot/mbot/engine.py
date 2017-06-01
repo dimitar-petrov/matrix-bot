@@ -54,7 +54,7 @@ class Engine(object):
                 self.webhook.set_plugin(plugin.get_webhook_key(), plugin)
 
     def _help(self):
-        plugins = [self.tr.trans(name) for name in  self.plugins.keys() ]
+        plugins = [self.tr.trans(name) for name in self.plugins.keys() if not self.plugins[name].hidden]
         return (
             self.tr.trans(
                 "Installed plugins: %s - Type '%shelp <plugin_name>' for more."
