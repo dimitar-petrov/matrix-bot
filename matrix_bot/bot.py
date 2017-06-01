@@ -12,6 +12,8 @@ import logging
 import logging.handlers
 import time
 import os
+import json
+import sys
 # For ssl verify silence
 import warnings
 
@@ -33,17 +35,19 @@ def generate_config(url, username, password, admin, config_loc):
 
 
 def load_config(loc):
-    try:
-        with open(loc, 'r') as f:
-            return MatrixConfig.from_file(f)
-    except IOError as e:
-        log.error("IOError with config file: %r" % e)
-        pass
-    except ValueError as e:
-        log.error("ValueError with config file: %r" % e)
-    except:
-        log.error("Unexpected Error with config file: %r" % sys.exc_info()[0])
-        pass
+    #    try:
+    with open(loc, 'r') as f:
+        return MatrixConfig.from_file(f)
+    #    except IOError as e:
+    #        log.error("IOError with config file: %r" % e)
+    #        pass
+    #    except ValueError as e:
+    #        log.error("ValueError with config file: %r" % e)
+    #    except KeyError as e:
+    #        log.error("KeyError with config file: %r" % e)
+    #    except:
+    #        log.error("Unexpected Error with config file: %r" % sys.exc_info())
+    #        pass
 
 
 def configure_logging(logfile):
@@ -71,37 +75,41 @@ def configure_logging(logfile):
 
 def startup(config):
     # setup api/endpoint
-    config.login = config.user_id[1:].split(":")[0]
-    if not config.token:
-        matrix = MatrixHttpApi(config.base_url)
-        matrix.validate_certificate(config.ssl_verify)
-        login = config.user_id[1:].split(":")[0]
+    login = config.json['user_id'][1:].split(":")[0]
+    if not config.json['token']:
+        matrix = MatrixHttpApi(config.json['url'])
+        matrix.validate_certificate(config.json['cert_verify'])
         try:
             res = matrix.login(
                 login_type="m.login.password",
                 user=login,
-                password=config.password
+                password=config.json['password']
             )
         except MatrixRequestError as err:
             log.error("Login error: %r" % err)
             exit()
         log.debug("Login result: %r" % res)
-        config.token = res["access_token"]
-        matrix.token = config.token
+        config.json['token'] = res["access_token"]
+        matrix.token = config.json['token']
     else:
-        matrix = MatrixHttpApi(config.base_url, config.token)
-        matrix.validate_certificate(config.ssl_verify)
+        matrix = MatrixHttpApi(config.json['url'], config.json['token'])
+        matrix.validate_certificate(config.json['cert_verify'])
 
     config.save()
 
     # Update Display Name if needed
-    cur_dn = matrix.get_display_name(config.user_id)
-    if not config.login == cur_dn:
-        matrix.set_display_name(config.user_id, config.login)
+    cur_dn = matrix.get_display_name(config.json['user_id'])
+    if not login == cur_dn:
+        matrix.set_display_name(config.json['user_id'], login)
 
     # root path for plugin search and locale load
     config.rootf = os.path.dirname(os.path.abspath(matrix_bot.__file__))
     log.debug("Matrix_bot root folder: %s" % config.rootf)
+    log.debug("Matrix_bot configuration: %s" % json.dumps(
+        config.json,
+        indent=4,
+        sort_keys=True
+    ))
 
     # setup engine
     engine = Engine(matrix, config)
@@ -118,7 +126,7 @@ def startup(config):
                 mod = __import__("matrix_bot.plugins."+name, fromlist=["*"])
                 for cls in inspect.getmembers(mod, inspect.isclass):
                     if hasattr(cls[1], "name"):
-                        if not config.plugins or cls[1].name in config.plugins:
+                        if not config.json['plugins'] or cls[1].name in config.json['plugins']:
                             engine.add_plugin(cls[1])
                             log.info("Load plugin %s (%s) from %s" % (
                                 cls[1].name, cls[0], os.path.join("plugins", fil)
@@ -197,7 +205,7 @@ def main():
         print(
             "Usage: 'python %s -c bot-config.json'" % os.path.basename(__file__)
         )
-    if config:
+    if config.json:
         startup(config)
 
 

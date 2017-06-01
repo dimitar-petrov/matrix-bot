@@ -4,14 +4,14 @@ Bot
 This is fork from generic client bot for Matrix which supports plugins.
 It appeared because I'm sad to see that NEB is obsoleted by go-neb `Issue#21 <https://github.com/matrix-org/Matrix-NEB/issues/21>`_
 This bot can speak on users's language (if there is a corresponding localization.
-About preparing localization read in `LOCALE.rst <https://github.com/slipeer/Matrix-NEB/blob/master/LOCALE.rst>`_)
+About preparing localization read in `LOCALE.rst <https://github.com/slipeer/matrix-bot/blob/master/LOCALE.rst>`_)
 
 Setup
 =====
 
 1. To install python package run:
 
-    pip install https://github.com/slipeer/Matrix-NEB/tarball/master
+    pip install https://github.com/slipeer/matrix-bot/tarball/master
 
 2. To start bot run:
 
@@ -23,7 +23,7 @@ Invite bot to room can only users, specified in *admins* list in Bot config
 
 Create a room and invite Bot to it, and then type ``!help`` for a list of valid commands.
 
-If need you can `start bot as Systemd service <https://github.com/slipeer/Matrix-NEB/blob/master/SYSTEMD.rst>`_
+If need you can `start bot as Systemd service <https://github.com/slipeer/matrix-bot/blob/master/SYSTEMD.rst>`_
 
 Register User for Bot
 =====================
@@ -60,7 +60,7 @@ Bot stores plugins related data in working directory.
 
 Template
 --------
-- A `plug-in template <https://github.com/slipeer/Matrix-NEB/blob/master/matrix_bot/plugins/template.py>`_ that describes the main features
+- A `plug-in template <https://github.com/slipeer/matrix-bot/blob/master/matrix_bot/plugins/template.py>`_ that describes the main features
 - Start developing your plug-in from it
 
 Google

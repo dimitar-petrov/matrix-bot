@@ -23,8 +23,8 @@ def admin_only(fn):
     def wrapped(*args, **kwargs):
         config = args[0].config
         event = args[1]
-        if event["sender"] not in config.admins:
-            return "Sorry, only %s can do that." % json.dumps(config.admins)
+        if event["sender"] not in config.json['admins']:
+            return "Sorry, only admins %s can do that." % json.dumps(config.json['admins'])
         result = fn(*args, **kwargs)
         return result
     return wrapped
@@ -205,7 +205,7 @@ class Plugin(PluginInterface):
         # more general until no args remain (in which case there isn't a match)
         for index, arg in enumerate(args_array):
             possible_method = '_'.join(args_array[:(len(args_array) - index)])
-            if self.config.case_insensitive:
+            if self.config.json['case_insensitive']:
                 possible_method = possible_method.lower()
             possible_method = self.tr.untrans(possible_method)
             if not is_ascii(possible_method):
@@ -266,7 +266,7 @@ class Plugin(PluginInterface):
         raise CommandNotFoundError(self.tr.trans("Unknown command").encode('utf-8'))
 
     def is_mentioned(self, body):
-        mention = body.find(self.config.login+":")+1
+        mention = body.find(self.config.json['login']+":")+1
         if mention:
             return body[mention-1:]
         else:

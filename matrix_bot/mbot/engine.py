@@ -67,10 +67,10 @@ class Engine(object):
 
     def parse_membership(self, event):
         log.info("Parsing membership: %s", event)
-        if (event["state_key"] == self.config.user_id
+        if (event["state_key"] == self.config.json['user_id']
                 and event["content"]["membership"] == "invite"):
             user_id = event["sender"]
-            if user_id in self.config.admins:
+            if user_id in self.config.json['admins']:
                 self.matrix.join_room(event["room_id"])
             else:
                 log.info(
@@ -105,7 +105,7 @@ class Engine(object):
 
     def parse_msg(self, event):
         body = event["content"]["body"].strip()
-        if (event["sender"] == self.config.user_id or
+        if (event["sender"] == self.config.json['user_id'] or
                 event["content"]["msgtype"] == "m.notice"):
             return
         room = event["room_id"]  # room_id added by us
@@ -114,7 +114,7 @@ class Engine(object):
             try:
                 segments = body.split()
                 cmd = segments[0][1:]
-                if self.config.case_insensitive:
+                if self.config.json['case_insensitive']:
                     cmd = cmd.lower()
 
                 # try untranslate CMD
