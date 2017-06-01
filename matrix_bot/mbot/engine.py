@@ -70,7 +70,9 @@ class Engine(object):
         if (event["state_key"] == self.config.json['user_id']
                 and event["content"]["membership"] == "invite"):
             user_id = event["sender"]
-            if user_id in self.config.json['admins']:
+            if self.config.json.get('any_can_invite'):
+                self.matrix.join_room(event["room_id"])
+            elif user_id in self.config.json['admins']:
                 self.matrix.join_room(event["room_id"])
             else:
                 log.info(
