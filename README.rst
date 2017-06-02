@@ -69,6 +69,7 @@ Config
 - Allow online bot configuration management
 - Allow view bot rooms
 - Allow order bot to leave room (without the need for an administrator to join the room)
+- Allow setup bot avatar
 
 Google
 ------

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from matrix_bot.mbot.plugins import Plugin, admin_only, civility
+import requests
 import logging
 import json
 from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
@@ -30,6 +31,7 @@ class ConfigPlugin(Plugin):
         'config rooms'
         'config leave <room_id>'
         'config set <param>=<val>'
+        'config avatar <avatar image url>'
     """
 
     name = 'config'
@@ -84,12 +86,6 @@ class ConfigPlugin(Plugin):
         else:
             room_id = args[0]
         self.matrix.leave_room(room_id)
-        if not room_id == event['room_id']:
-            rooms = []
-            for room in self.config.rooms:
-                room_name = self.matrix.get_room_name(room)
-                rooms.append("%s (%s)" % (room, room_name.get('name')))
-            self.send_html(event['room_id'], "['"+"', '".join(rooms)+"']")
 
     @admin_only
     def cmd_set(self, event, *args):
@@ -109,7 +105,37 @@ class ConfigPlugin(Plugin):
                     type(self.config.json[param]), type(val)
                 )
         self.config.set(param, val)
-        self.send_html(event['room_id'], "Setup param: `%s` to value: `%s`" % (param, val))
+        self.send_html(
+            event['room_id'], "Setup param: `%s` to value: `%s`" % (param, val)
+        )
+
+    @admin_only
+    def cmd_avatar(self, event, *args):
+        """Set bot avatar. Usage: 'config avatar <avatar image url>'"""
+        try:
+            i = requests.get(' '.join(args), timeout=30)
+        except ConnectionError as err:
+            log.error(
+                'Avatar image %s download error: %r'
+                % (' '.join(args), err)
+            )
+            return 'Avatar image %s download error: %r' % (' '.join(args), err)
+        if not i.status_code == requests.codes.ok:
+            return 'Avatar image %s download error: %d' % (' '.join(args), i.status_code)
+        log.debug('Avatar mime: %s' % i.headers['content-type'].split(';')[0])
+        ires = self.matrix.media_upload(
+            i.content,
+            i.headers['content-type'].split(';')[0]
+        )
+        if 'content_uri' in ires:
+            log.debug('Avatar uploaded: %s' % ires['content_uri'])
+            self.matrix.set_avatar_url(
+                self.config.json['user_id'],
+                ires['content_uri'],
+            )
+        else:
+            log.error('Avatar upload error: %r' % ires)
+            return 'Avatar upload error: %r' % ires
 
     @admin_only
     def cmd_save(self, event, *args):
