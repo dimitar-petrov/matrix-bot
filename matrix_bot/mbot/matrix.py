@@ -25,6 +25,9 @@ class MatrixConfig(object):
 
         # defaults
 
+        if 'case_insensitive' not in j:
+            j['case_insensitive'] = True
+
         if 'cert_verify' not in j:
             j['cert_verify'] = True
 
@@ -44,6 +47,9 @@ class MatrixConfig(object):
 
         if 'hook_port' not in j:
             j['hook_port'] = 8500
+
+        if 'url' not in j:
+            j['url'] = "https://matrix.org"
 
         return MatrixConfig(j, f.name)
 
