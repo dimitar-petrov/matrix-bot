@@ -29,7 +29,10 @@ class Engine(object):
         self.tr = locale(config, __name__)
 
     def setup(self):
-        self.webhook = NebHookServer(8500)
+        self.webhook = NebHookServer(
+            self.config.json['hook_host'],
+            self.config.json['hook_port']
+        )
         self.webhook.daemon = True
         self.webhook.start()
 

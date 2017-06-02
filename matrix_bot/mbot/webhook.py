@@ -13,8 +13,9 @@ app = Flask("NebHookServer")
 
 class NebHookServer(threading.Thread):
 
-    def __init__(self, port):
+    def __init__(self, host, port):
         super(NebHookServer, self).__init__()
+        self.host = host
         self.port = port
         self.plugin_mappings = {
             #    plugin_key : plugin_instance
@@ -54,5 +55,5 @@ class NebHookServer(threading.Thread):
         self.plugin.on_receive_github_push(content)
 
     def run(self):
-        log.info("Running NebHookServer")
-        app.run(host="0.0.0.0", port=self.port)
+        log.info("Running NebHookServer on %s:%s", self.host, str(self.port))
+        app.run(host=self.host, port=self.port)

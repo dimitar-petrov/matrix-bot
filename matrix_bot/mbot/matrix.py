@@ -37,7 +37,13 @@ class MatrixConfig(object):
             j['any_can_invite'] = True
 
         if 'plugins' not in j:
-            j['plugins'] = ['config']
+            j['plugins'] = []
+
+        if 'hook_host' not in j:
+            j['hook_host'] = "0.0.0.0"
+
+        if 'hook_port' not in j:
+            j['hook_port'] = 8500
 
         return MatrixConfig(j, f.name)
 
