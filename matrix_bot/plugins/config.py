@@ -108,6 +108,10 @@ class ConfigPlugin(Plugin):
         self.send_html(
             event['room_id'], "Setup param: `%s` to value: `%s`" % (param, val)
         )
+        if param in ['plugins']:
+            # needs restart to aply
+            self.config.save()
+            raise SystemExit('Need restart to apply config changes.')
 
     @admin_only
     def cmd_avatar(self, event, *args):
