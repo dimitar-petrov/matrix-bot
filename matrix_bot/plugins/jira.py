@@ -1,10 +1,10 @@
 from matrix_bot.mbot.store import KeyValueStore, RoomContextStore
 from matrix_bot.mbot.plugins import Plugin, admin_only
-
 import getpass
 import json
 import re
 import requests
+# from jira import JIRA
 
 import logging as log
 
@@ -54,6 +54,10 @@ class JiraPlugin(Plugin):
 
         self.auth = (self.store.get("user"), self.store.get("pass"))
         self.regex = re.compile(r"\b(([A-Za-z]+)-\d+)\b")
+
+        # self.jira = JIRA(self.store.get('url'),
+        #                  auth=(self.store.get('user'),
+        #                        self.store.get('pass')))
 
     @admin_only
     def cmd_stop(self, event, action):
@@ -252,11 +256,16 @@ class JiraPlugin(Plugin):
         self.rooms.update(event)
 
     def on_receive_jira_push(self, info):
-        log.debug("on_recv %s", info)
+        log.debug("on_recv %s", str(info))
         project = self.regex.match(info["key"]).groups()[1]
 
         # form the message
-        link = self._linkify(info["key"])
+        try:
+            link = self._linkify(info["key"])
+        except TypeError:
+            return
+
+        print(info)
         push_message = "%s %s <b>%s</b> - %s %s" % (
             info["user"], info["action"], info["key"], info["summary"], link
         )
@@ -267,9 +276,10 @@ class JiraPlugin(Plugin):
                 content = self.rooms.get_content(room_id, JiraPlugin.TYPE_TRACK)
                 if project in content["projects"]:
                     self.matrix.send_message_event(
+
                         room_id,
                         "m.room.message",
-                        self.matrix.get_html_body(push_message, msgtype="m.notice")
+                        self.matrix.get_text_body(push_message)
                     )
             except KeyError:
                 pass
@@ -373,26 +383,44 @@ class JiraPlugin(Plugin):
         self.on_receive_jira_push(info)
 
     def get_webhook_json_keys(self, j):
-        key = j['issue']['key']
-        user = j['user']['name']
-        self_key = j['issue']['self']
-        summary = self.get_webhook_summary(j)
-        action = ""
+        if 'comment' in j:
+            try:
+                key = j['issue']['key']
+                summary = self.get_webhook_summary(j)
+            except KeyError:
+                key = None
+                summary = None
 
-        if j['webhookEvent'] == "jira:issue_updated":
-            action = "updated"
-        elif j['webhookEvent'] == "jira:issue_deleted":
-            action = "deleted"
-        elif j['webhookEvent'] == "jira:issue_created":
-            action = "created"
+            body = j['comment']['body']
+            user = j['comment']['updateAuthor']['displayName']
+            self_key = j['comment']['self']
+            action = j['webhookEvent'].split('_')[1]
 
-        return {
-            "key": key,
-            "user": user,
-            "summary": summary,
-            "self": self_key,
-            "action": action
-        }
+            result = {
+                "key": key,
+                "comment": body,
+                "user": user,
+                "self": self_key,
+                "summary": summary,
+                "action": action
+            }
+        elif 'issue' in j:
+            key = j['issue']['key']
+            user = j['user']['name']
+            self_key = j['issue']['self']
+            summary = self.get_webhook_summary(j)
+            action = j['webhookEvent'].split('_')[1]
+
+            result = {
+                "key": key,
+                "user": user,
+                "summary": summary,
+                "self": self_key,
+                "action": action
+            }
+
+
+        return result
 
     def get_webhook_summary(self, j):
         summary = j['issue']['fields']['summary']

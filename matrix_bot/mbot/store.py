@@ -108,5 +108,3 @@ class RoomContextStore(object):
                         self.state[room_id][key] = s
             except KeyError:
                 pass
-
-        log.debug(pprint.pformat(self.state))

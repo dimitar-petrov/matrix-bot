@@ -52,7 +52,7 @@ def configure_logging(logfile):
     # Not need timestamp for stdin - systemd adds it
     log_format = "%(levelname)s: %(message)s"
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format=log_format
     )
     # Do not print requests DEBUG output
