@@ -265,9 +265,8 @@ class JiraPlugin(Plugin):
         except TypeError:
             return
 
-        print(info)
-        push_message = "%s %s <b>%s</b> - %s %s" % (
-            info["user"], info["action"], info["key"], info["summary"], link
+        push_message = "[%s] %s by %s - %s %s" % (
+            info["key"], info["action"], info["user"], info["summary"], link
         )
 
         # send messages to all rooms registered with this project.
@@ -276,10 +275,11 @@ class JiraPlugin(Plugin):
                 content = self.rooms.get_content(room_id, JiraPlugin.TYPE_TRACK)
                 if project in content["projects"]:
                     self.matrix.send_message_event(
-
                         room_id,
                         "m.room.message",
-                        self.matrix.get_text_body(push_message)
+                        {'body': push_message,
+                         'msgtype': 'm.notice'}
+                        # self.matrix.get_text_body(push_message)
                     )
             except KeyError:
                 pass
@@ -380,47 +380,39 @@ class JiraPlugin(Plugin):
         j = json.loads(data)
 
         info = self.get_webhook_json_keys(j)
-        self.on_receive_jira_push(info)
+        if info:
+            self.on_receive_jira_push(info)
 
     def get_webhook_json_keys(self, j):
+        if 'issue' in j:
+            key = j['issue']['key']
+            user = j['user']['displayName']
+            self_key = j['issue']['self']
+            summary = self.get_webhook_summary(j)
+            action = j['webhookEvent'].split('_')[1]
+
+            return {
+                "key": key,
+                "user": user,
+                "summary": summary,
+                "self": self_key,
+                "action": action
+            }
+
         if 'comment' in j:
-            try:
-                key = j['issue']['key']
-                summary = self.get_webhook_summary(j)
-            except KeyError:
-                key = None
-                summary = None
 
             body = j['comment']['body']
             user = j['comment']['updateAuthor']['displayName']
             self_key = j['comment']['self']
             action = j['webhookEvent'].split('_')[1]
 
-            result = {
-                "key": key,
-                "comment": body,
+            return  {
+                "key": 'SR-0',
                 "user": user,
                 "self": self_key,
-                "summary": summary,
+                "summary": body,
                 "action": action
             }
-        elif 'issue' in j:
-            key = j['issue']['key']
-            user = j['user']['name']
-            self_key = j['issue']['self']
-            summary = self.get_webhook_summary(j)
-            action = j['webhookEvent'].split('_')[1]
-
-            result = {
-                "key": key,
-                "user": user,
-                "summary": summary,
-                "self": self_key,
-                "action": action
-            }
-
-
-        return result
 
     def get_webhook_summary(self, j):
         summary = j['issue']['fields']['summary']
